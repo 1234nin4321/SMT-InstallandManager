@@ -144,6 +144,9 @@ cashier whether there's any weed behind the checkout ("Psst... you got any weed 
 that register answers ("We have oregano in aisle 3."). Press **F8** to send one in straight away (host only).
 Settings in F1: on/off, stoner chance, how many snacks, the hazy glow, the mumbles and the key.
 
+The shopping cart model (work in progress) is by mechano-file, used under the MIT License
+([`CustomerImprovements/assets/LICENSE-ShoppingCart.txt`](CustomerImprovements/assets/LICENSE-ShoppingCart.txt)).
+
 **Customer count.** A box at the right side of the screen, a quarter of the way down, shows how many customers
 are in the store right now ("Customers: 12"). It counts every customer the game is running, including those still
 walking in from the street or on their way out; children aren't counted. Every player who has the mod sees it,

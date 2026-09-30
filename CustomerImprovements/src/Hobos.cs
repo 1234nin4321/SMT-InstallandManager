@@ -86,7 +86,11 @@ namespace SMTCustomerImprovements
             var shopping = Spawner.UsualShopping(manager, model);
             int keep = Random.Range(2, 6);
             if (shopping.Count > keep) shopping.RemoveRange(keep, shopping.Count - keep);
-            if (shopping.Count == 0) return;
+            if (shopping.Count == 0)
+            {
+                CustomerImprovementsPlugin.Log.LogInfo("No hobo: the store gave them nothing to buy.");
+                return;
+            }
 
             bool thief = Random.value < CustomerImprovementsPlugin.HoboStealChance.Value;
             var npc = Spawner.Spawn(manager, Spawner.SpawnPoint(manager), model, shopping, thief);
@@ -97,6 +101,7 @@ namespace SMTCustomerImprovements
                 nextMumble = Time.time + Random.Range(10f, 25f),
             });
             Net.SendHobo(npc);
+            CustomerImprovementsPlugin.Log.LogInfo($"A hobo wandered in ({(thief ? "thief" : "shopper")}, {shopping.Count} items).");
             Net.Announce("Something smells... a hobo just wandered in.");
         }
 

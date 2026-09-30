@@ -167,13 +167,28 @@ namespace SMTCustomerImprovements
 
         void Update()
         {
-            Net.Update();
-            Families.Update();
-            PaymentHint.Update();
-            Party.Update();
-            Hobos.Update();
-            Stoners.Update();
-            Aura.Update();
+            Run("Net", Net.Update);
+            Run("Families", Families.Update);
+            Run("PaymentHint", PaymentHint.Update);
+            Run("Party", Party.Update);
+            Run("Hobos", Hobos.Update);
+            Run("Stoners", Stoners.Update);
+            Run("Aura", Aura.Update);
+        }
+
+        // One feature failing mustn't stop the others. Each error is logged once, so the log doesn't fill up every frame.
+        static readonly System.Collections.Generic.HashSet<string> failed = new System.Collections.Generic.HashSet<string>();
+
+        static void Run(string feature, System.Action update)
+        {
+            try
+            {
+                update();
+            }
+            catch (System.Exception e)
+            {
+                if (failed.Add(feature + e.Message)) Log.LogError($"{feature} failed: {e}");
+            }
         }
 
         void OnGUI() => CustomerCounter.Draw();

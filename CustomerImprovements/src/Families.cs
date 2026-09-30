@@ -96,7 +96,7 @@ namespace SMTCustomerImprovements
             {
                 var customer = npc.GetComponent<NPC_Info>();
                 if (customer == null || !seen.Add(customer)) continue;
-                if (customer.isAThief || customer.customerOrderNumber != 0 || customer.state != 0 || Party.IsPartyGoer(customer) || Hobos.IsHobo(customer)) continue;
+                if (customer.isAThief || customer.customerOrderNumber != 0 || customer.state != 0 || Party.IsPartyGoer(customer) || Hobos.IsHobo(customer) || Stoners.IsStoner(customer)) continue;
                 if (!NearSpawn(manager, npc.position)) continue;
                 if (Random.value >= CustomerImprovementsPlugin.FamilyChance.Value) continue;
                 StartFamily(manager, customer);

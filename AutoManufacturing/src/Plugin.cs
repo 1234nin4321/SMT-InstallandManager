@@ -9,7 +9,7 @@ namespace SMTAutoManufacturing
     {
         public const string Guid = "smt.installandmanager.automanufacturing";
         public const string Name = "SMT Auto Manufacturing";
-        public const string Version = "0.1.0";
+        public const string Version = "0.1.1";
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<int> ReserveBoxes;
@@ -28,7 +28,8 @@ namespace SMTAutoManufacturing
                     new AcceptableValueRange<int>(0, 10)));
             QueuePerMachine = Config.Bind("General", "Queue per machine", 2,
                 new ConfigDescription("How many products each manufacturing machine gets queued at most, not counting the " +
-                    "one it's making.", new AcceptableValueRange<int>(1, 5)));
+                    "one it's making. While a manufacturing desk has orders waiting, machines are only filled up to 2, " +
+                    "so the desk can hand them over.", new AcceptableValueRange<int>(1, 5)));
             CheckInterval = Config.Bind("General", "Check interval", 10f,
                 new ConfigDescription("Seconds between checks of what's needed.", new AcceptableValueRange<float>(5f, 120f)));
 

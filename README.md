@@ -65,7 +65,9 @@ the host looks at every product labelled on the manufacturing shelves and counts
 storage, in boxes lying around, in the machines' queues and in the machines right now. When that's less than what fits on
 the shelves plus one spare box, it queues another one on the machine with the shortest queue, emptiest product first.
 Before queuing it checks that the store has the ingredients (in storage or on the shelves, where employees fetch them), and
-skips products it can't make yet.
+skips products it can't make yet. Extra ingredients only count when they're in storage: customers can buy them off the
+shelves first, and an employee waits for a missing extra until it turns up. While a manufacturing desk has orders
+waiting, machines are only filled up to 2 so the desk can still hand them over.
 
 It only decides *what* to make: employees assigned to manufacturing still fetch the ingredients, start the machines and
 restock the shelves, as in the unmodded game. Without them, the queue fills up and waits for a player to add the ingredients.

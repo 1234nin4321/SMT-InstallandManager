@@ -83,7 +83,7 @@ calls in lines the game's chat never shows.
 
 ## SMT Customer Improvements (optional plugin)
 
-Changes to how customers behave: payment fraud, families, party animals, hobos, stoners and a customer counter.
+Changes to how customers behave: payment fraud, families, party animals, hobos, stoners, shopping carts and a customer counter.
 
 **Payment fraud.** Now and then (10% of payments by default) a customer at a register pays with fake cash or a stolen credit card.
 Stand near the register while they're paying and press **G** to check the payment:
@@ -144,8 +144,16 @@ cashier whether there's any weed behind the checkout ("Psst... you got any weed 
 that register answers ("We have oregano in aisle 3."). Press **F8** to send one in straight away (host only).
 Settings in F1: on/off, stoner chance, how many snacks, the hazy glow, the mumbles and the key.
 
-The shopping cart model (work in progress) is by mechano-file, used under the MIT License
-([`CustomerImprovements/assets/LICENSE-ShoppingCart.txt`](CustomerImprovements/assets/LICENSE-ShoppingCart.txt)).
+**Shopping carts.** Every customer pushes a shopping cart, with both hands on the handle, and what they've picked up
+so far lies in the basket: copies of the products' own models, shrunk to fit if they're big, up to 24 in two layers.
+At the register the cart empties as the products go onto the counter. Carts are only for show: customers walk where
+they always did, so a cart can pass through a shelf or another customer. Each player with the mod sees the carts;
+what's in them comes from the host, so with a host without the mod the carts stay empty. Players without the mod
+see customers as usual.
+Settings in F1: on/off, cart size and whether products show in the cart.
+The shopping cart model is by mechano-file, used under the MIT License
+([`CustomerImprovements/assets/LICENSE-ShoppingCart.txt`](CustomerImprovements/assets/LICENSE-ShoppingCart.txt)),
+which ships in the mod's zip with the model.
 
 **Customer count.** A box at the right side of the screen, a quarter of the way down, shows how many customers
 are in the store right now ("Customers: 12"). It counts every customer the game is running, including those still

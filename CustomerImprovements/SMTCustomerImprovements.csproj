@@ -5,7 +5,7 @@
     <AssemblyName>SMTCustomerImprovements</AssemblyName>
     <RootNamespace>SMTCustomerImprovements</RootNamespace>
     <Product>SMT Customer Improvements</Product>
-    <Version>0.5.0</Version>
+    <Version>0.6.0</Version>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;
@@ -39,6 +39,9 @@
     </PropertyGroup>
     <RemoveDir Directories="$(PackDir)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PackDir)BepInEx/plugins/SMTCustomerImprovements/" />
+    <!-- The shopping cart model, by mechano-file (MIT License), which the licence says must ship with it -->
+    <Copy SourceFiles="assets/ShoppingCart.obj;assets/BaseColor.png;assets/LICENSE-ShoppingCart.txt"
+          DestinationFiles="$(PackDir)BepInEx/plugins/SMTCustomerImprovements/ShoppingCart.obj;$(PackDir)BepInEx/plugins/SMTCustomerImprovements/ShoppingCart.png;$(PackDir)BepInEx/plugins/SMTCustomerImprovements/LICENSE-ShoppingCart.txt" />
     <MakeDir Directories="$(DistDir)" />
     <ZipDirectory SourceDirectory="$(PackDir)" DestinationFile="$(DistDir)SMTCustomerImprovements_v$(Version).zip" Overwrite="true" />
   </Target>

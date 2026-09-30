@@ -23,6 +23,7 @@ namespace SMTCustomerImprovements
         const string PartyPrefix = "<b>customer-improvements:party:";
         const string HoboPrefix = "<b>customer-improvements:hobo:";
         const string StonerPrefix = "<b>customer-improvements:stoner:";
+        const string CartPrefix = "<b>customer-improvements:cart:";
         // Marks a line to show above a customer's head as it is, instead of looking it up in the game's translations
         const string SayKey = "SMTCustomerImprovements.Say:";
         const string Suffix = "</b>";
@@ -131,6 +132,9 @@ namespace SMTCustomerImprovements
         // Tells every player with the mod to give this customer the hazy glow
         public static void SendStoner(NPC_Info stoner) => Send(StonerPrefix + stoner.netId + Suffix);
 
+        // Tells every player with the mod what is in customers' carts
+        public static void SendCarts(string contents) => Send(CartPrefix + contents + Suffix);
+
         public static void SendDayLosses(string totals) => Send(DayPrefix + totals + Suffix);
 
         public static void Announce(string message)
@@ -199,6 +203,11 @@ namespace SMTCustomerImprovements
                 if (message.StartsWith(HoboPrefix))
                 {
                     Hobos.Received(message.Substring(HoboPrefix.Length).Replace(Suffix, ""));
+                    return false;
+                }
+                if (message.StartsWith(CartPrefix))
+                {
+                    Carts.Received(message.Substring(CartPrefix.Length).Replace(Suffix, ""));
                     return false;
                 }
                 if (message.StartsWith(StonerPrefix))

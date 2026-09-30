@@ -10,7 +10,7 @@ namespace SMTCustomerImprovements
     {
         public const string Guid = "smt.installandmanager.customerimprovements";
         public const string Name = "SMT Customer Improvements";
-        public const string Version = "0.5.0";
+        public const string Version = "0.6.0";
 
         internal static BepInEx.Logging.ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -54,6 +54,9 @@ namespace SMTCustomerImprovements
         internal static ConfigEntry<bool> StonerAura;
         internal static ConfigEntry<bool> StonerMumbles;
         internal static ConfigEntry<KeyboardShortcut> StonerNow;
+        internal static ConfigEntry<bool> CartsEnabled;
+        internal static ConfigEntry<float> CartSize;
+        internal static ConfigEntry<bool> CartProducts;
 
         void Awake()
         {
@@ -161,6 +164,14 @@ namespace SMTCustomerImprovements
             StonerNow = Config.Bind("Stoners", "Stoner now", new KeyboardShortcut(KeyCode.F8),
                 "Sends in a stoner straight away (host only)");
 
+            CartsEnabled = Config.Bind("Shopping carts", "Enabled", true,
+                "Every customer pushes a shopping cart. Only for show, and only players with the mod see them");
+            CartSize = Config.Bind("Shopping carts", "Cart size", 1f,
+                new ConfigDescription("How big the carts are", new AcceptableValueRange<float>(0.6f, 1.5f)));
+            CartProducts = Config.Bind("Shopping carts", "Show products", true,
+                "What customers have picked up lies in their cart (the host needs the mod for this)");
+            Carts.Folder = System.IO.Path.GetDirectoryName(Info.Location);
+
             new Harmony(Guid).PatchAll(typeof(CustomerImprovementsPlugin).Assembly);
             Logger.LogInfo($"{Name} {Version} loaded.");
         }
@@ -173,6 +184,7 @@ namespace SMTCustomerImprovements
             Run("Party", Party.Update);
             Run("Hobos", Hobos.Update);
             Run("Stoners", Stoners.Update);
+            Run("Carts", Carts.Update);
             Run("Aura", Aura.Update);
         }
 
@@ -190,6 +202,8 @@ namespace SMTCustomerImprovements
                 if (failed.Add(feature + e.Message)) Log.LogError($"{feature} failed: {e}");
             }
         }
+
+        void LateUpdate() => Run("Cart hands", Carts.LateUpdate);
 
         void OnGUI() => CustomerCounter.Draw();
     }

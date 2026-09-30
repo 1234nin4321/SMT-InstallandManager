@@ -10,7 +10,7 @@ namespace SMTCustomerImprovements
     {
         public const string Guid = "smt.installandmanager.customerimprovements";
         public const string Name = "SMT Customer Improvements";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
 
         internal static BepInEx.Logging.ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -25,6 +25,7 @@ namespace SMTCustomerImprovements
         internal static ConfigEntry<int> ExtraItemsPerChild;
         internal static ConfigEntry<float> ChildSize;
         internal static ConfigEntry<bool> ChildrenTalk;
+        internal static ConfigEntry<bool> ShowCustomerCount;
 
         void Awake()
         {
@@ -59,6 +60,9 @@ namespace SMTCustomerImprovements
             ChildrenTalk = Config.Bind("Families", "Children talk", true,
                 "Children now and then say something above their heads (host only)");
 
+            ShowCustomerCount = Config.Bind("Customer count", "Show", true,
+                "Shows how many customers are in the store at the right side of the screen");
+
             new Harmony(Guid).PatchAll(typeof(CustomerImprovementsPlugin).Assembly);
             Logger.LogInfo($"{Name} {Version} loaded.");
         }
@@ -68,5 +72,7 @@ namespace SMTCustomerImprovements
             Net.Update();
             Families.Update();
         }
+
+        void OnGUI() => CustomerCounter.Draw();
     }
 }

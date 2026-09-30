@@ -81,7 +81,7 @@ calls in lines the game's chat never shows.
 
 ## SMT Customer Improvements (optional plugin)
 
-Changes to how customers behave: payment fraud and families.
+Changes to how customers behave: payment fraud, families and a customer counter.
 
 **Payment fraud.** Now and then (10% of payments by default) a customer at a register pays with fake cash or a stolen credit card.
 Stand near the register while they're paying and press **G** to check the payment:
@@ -108,6 +108,11 @@ shopping list, and now and then says something ("Can we get candy?", "Are we don
 Settings in F1: on/off, family chance, most children (up to 3), extra items per child, child size and whether children
 talk. Players without the mod see children as full-size customers following their parent around and don't see what
 they say; players who join after a family came in see those children at full size too.
+
+**Customer count.** A box at the right side of the screen, a quarter of the way down, shows how many customers
+are in the store right now ("Customers: 12"). It counts every customer the game is running, including those still
+walking in from the street or on their way out; children aren't counted. Every player who has the mod sees it,
+host or not. Turn it off in F1 (*Customer count* → *Show*).
 
 Everything is decided by the host; other players need the mod to check payments and see the hints, the summary line,
 the children's size and what customers say.

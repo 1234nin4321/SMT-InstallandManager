@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- BepInEx preloader patcher: applies installs/removals that were deferred while the game was running -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>SMTModBrowser.Preloader</AssemblyName>
+    <RootNamespace>SMTModBrowser.Preloader</RootNamespace>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Plugin/src/Core/ModLayout.cs" />
+    <Compile Include="../Plugin/src/Core/PendingOps.cs" />
+  </ItemGroup>
+
+</Project>

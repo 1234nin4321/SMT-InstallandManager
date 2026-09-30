@@ -1,0 +1,32 @@
+{
+  "mods": [
+    {
+      "name": "UberEats",
+      "description": "Deliveries go straight into storage; the rest are stacked neatly instead of dropping from the sky",
+      "asset": "^SMTUberEats_v.*\\.zip$",
+      "file": "BepInEx/plugins/SMTUberEats/SMTUberEats.dll",
+      "selected": false
+    },
+    {
+      "name": "Random Announcements",
+      "description": "Random store announcements over the loudspeakers, read in different voices",
+      "asset": "^SMTRandomAnnouncements_v.*\\.zip$",
+      "file": "BepInEx/plugins/SMTRandomAnnouncements/SMTRandomAnnouncements.dll",
+      "selected": false
+    },
+    {
+      "name": "Auto Manufacturing",
+      "description": "Queues manufactured products on the machines whenever the manufacturing shelves run low",
+      "asset": "^SMTAutoManufacturing_v.*\\.zip$",
+      "file": "BepInEx/plugins/SMTAutoManufacturing/SMTAutoManufacturing.dll",
+      "selected": false
+    },
+    {
+      "name": "Anyone Continues",
+      "description": "Any player can press a key to start the next day, not just the host",
+      "asset": "^SMTAnyoneContinues_v.*\\.zip$",
+      "file": "BepInEx/plugins/SMTAnyoneContinues/SMTAnyoneContinues.dll",
+      "selected": false
+    }
+  ]
+}

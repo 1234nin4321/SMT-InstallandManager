@@ -1,0 +1,2 @@
+# Game assemblies belong to the game and must not be committed
+*.dll

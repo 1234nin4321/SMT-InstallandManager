@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>SMTAnyoneContinues</AssemblyName>
+    <RootNamespace>SMTAnyoneContinues</RootNamespace>
+    <Product>SMT Anyone Continues</Product>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+    <!-- Supermarket Together runs on Unity 2022.3 -->
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <!-- The game's own assemblies. They can't be published, so each developer copies them into sources/ -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp" HintPath="../sources/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Mirror" HintPath="../sources/Mirror.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="CheckGameAssemblies" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('../sources/Assembly-CSharp.dll') Or !Exists('../sources/Mirror.dll')"
+           Text="Copy Assembly-CSharp.dll and Mirror.dll from the game's 'Supermarket Together_Data/Managed' folder into sources/ first." />
+  </Target>
+
+  <!-- Release builds produce dist/SMTAnyoneContinues_vX.Y.Z.zip, laid out to extract into the game folder -->
+  <Target Name="PackRelease" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PackDir>$(IntermediateOutputPath)package/</PackDir>
+      <DistDir>$(MSBuildThisFileDirectory)../dist/</DistDir>
+    </PropertyGroup>
+    <RemoveDir Directories="$(PackDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PackDir)BepInEx/plugins/SMTAnyoneContinues/" />
+    <MakeDir Directories="$(DistDir)" />
+    <ZipDirectory SourceDirectory="$(PackDir)" DestinationFile="$(DistDir)SMTAnyoneContinues_v$(Version).zip" Overwrite="true" />
+  </Target>
+
+</Project>

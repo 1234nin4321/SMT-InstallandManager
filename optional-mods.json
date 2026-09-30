@@ -27,6 +27,13 @@
       "asset": "^SMTAnyoneContinues_v.*\\.zip$",
       "file": "BepInEx/plugins/SMTAnyoneContinues/SMTAnyoneContinues.dll",
       "selected": false
+    },
+    {
+      "name": "Customer Improvements",
+      "description": "Customers come in as families, and some pay with fake cash or stolen cards; catch them and they run off like a thief",
+      "asset": "^SMTCustomerImprovements_v.*\\.zip$",
+      "file": "BepInEx/plugins/SMTCustomerImprovements/SMTCustomerImprovements.dll",
+      "selected": false
     }
   ]
 }

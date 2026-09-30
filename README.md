@@ -79,6 +79,39 @@ next day. The host and every player who should be able to continue need it; play
 who has it. The host tells the others about the prompt, and they send their key press back, through the game's own chat
 calls in lines the game's chat never shows.
 
+## SMT Customer Improvements (optional plugin)
+
+Changes to how customers behave: payment fraud and families.
+
+**Payment fraud.** Now and then (10% of payments by default) a customer at a register pays with fake cash or a stolen credit card.
+Stand near the register while they're paying and press **G** to check the payment:
+
+- **Fraud caught:** the customer grabs everything that was scanned (the bags vanish from the counter) and runs off
+  like any other thief. Hit them, or let security guards chase them, to get the products back.
+- **Honest customer accused:** they storm out insulted without paying, and the sale is lost. They say so above their
+  head ("I want to speak to your manager!"), with lines of their own for cash and for cards; players without the mod don't see these.
+- **Nobody checks:** the payment goes through like any other and the customer leaves with their shopping. At the end
+  of the day the fake bills turn up in the till and the card company takes back what stolen cards paid: the total comes
+  off the store's funds and shows up as its own line in the end-of-day summary ("Fake cash & stolen cards"), included
+  in the day's balance. Players need the mod to see that line; the host also posts the losses in the chat.
+
+Fake bills are tinted purple and stolen cards red, so a sharp eye can spot them (setting *Show hint*).
+Employees working a register spot fraud half the time (setting *Employee catch chance*). The host posts what happened
+in the game chat (setting *Announce in chat*), which every player sees.
+Settings in F1: on/off, fraud chance, employee catch chance, the hint, the check key and the chat lines.
+Players send their check to the host through the game's own chat calls, in lines the game's chat never shows.
+
+**Families.** Some customers (20% by default) come in with one or two children. The game has no child models, so a
+child is one of the customer models at 60% size. Children walk along behind their parent, wait with them in the
+queue, and leave with them, running off too if the parent turns thief. Each child adds two things to the parent's
+shopping list, and now and then says something ("Can we get candy?", "Are we done yet?").
+Settings in F1: on/off, family chance, most children (up to 3), extra items per child, child size and whether children
+talk. Players without the mod see children as full-size customers following their parent around and don't see what
+they say; players who join after a family came in see those children at full size too.
+
+Everything is decided by the host; other players need the mod to check payments and see the hints, the summary line,
+the children's size and what customers say.
+
 ## Layout
 
 | Folder         | What                                                        |
@@ -90,6 +123,7 @@ calls in lines the game's chat never shows.
 | `RandomAnnouncements/` | SMTRandomAnnouncements.dll (optional BepInEx plugin, loudspeaker) |
 | `AutoManufacturing/` | SMTAutoManufacturing.dll (optional BepInEx plugin, manufacturing) |
 | `AnyoneContinues/` | SMTAnyoneContinues.dll (optional BepInEx plugin, end of day) |
+| `CustomerImprovements/` | SMTCustomerImprovements.dll (optional BepInEx plugin, customers) |
 | `sources/`     | The game's `Assembly-CSharp.dll` and `Mirror.dll` (not committed) |
 | `Plugin.Tests/`| Tests for the plugin's install logic, run on plain .NET     |
 | `dist/`        | Prebuilt installer exe and the plugin release zip           |
@@ -106,7 +140,7 @@ dotnet run -c Release --project Plugin.Tests
 A Release build writes `dist/SMTInstaller_vX.Y.Z.exe` and `dist/SMTModBrowser_vX.Y.Z.zip`.
 Attach them to a GitHub release so the installer can find them (the repo must be public for that).
 
-UberEats, Random Announcements, Auto Manufacturing and Anyone Continues are built on their own because they need the game's assemblies. Copy `Assembly-CSharp.dll` and
+UberEats, Random Announcements, Auto Manufacturing, Anyone Continues and Customer Improvements are built on their own because they need the game's assemblies. Copy `Assembly-CSharp.dll` and
 `Mirror.dll` from the game's `Supermarket Together_Data/Managed/` folder into `sources/` (git ignores them), then:
 
 ```
@@ -114,10 +148,11 @@ dotnet build -c Release UberEats/SMTUberEats.csproj
 dotnet build -c Release RandomAnnouncements/SMTRandomAnnouncements.csproj
 dotnet build -c Release AutoManufacturing/SMTAutoManufacturing.csproj
 dotnet build -c Release AnyoneContinues/SMTAnyoneContinues.csproj
+dotnet build -c Release CustomerImprovements/SMTCustomerImprovements.csproj
 ```
 
 That writes `dist/SMTUberEats_vX.Y.Z.zip`, `dist/SMTRandomAnnouncements_vX.Y.Z.zip`, `dist/SMTAutoManufacturing_vX.Y.Z.zip`
-and `dist/SMTAnyoneContinues_vX.Y.Z.zip`.
+`dist/SMTAnyoneContinues_vX.Y.Z.zip` and `dist/SMTCustomerImprovements_vX.Y.Z.zip`.
 
 - The installer finds updates of itself by the version in the exe's file name, so keep the
   `SMTInstaller_vX.Y.Z.exe` name and bump `<Version>` in `Installer/SMTInstaller.csproj` to release one.

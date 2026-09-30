@@ -98,18 +98,32 @@ namespace SMTCustomerImprovements
             customer.state = -1;
         }
 
-        // An honest customer who gets accused storms out without paying
+        // An honest customer who gets accused storms out without paying. What they had scanned goes back into stock.
         static void Insult(Data_Container register, NPC_Info customer)
         {
             bool card = Showing(register, "Payments/Payment_Card") || Showing(register, "CreditCardCanvas/Container");
+            var products = new List<int>();
+            if (scanned.TryGetValue(customer.gameObject, out var items))
+                foreach (var (id, _) in items) products.Add(id);
+            // Scanned before the mod was watching: take what was put on the belt
+            if (products.Count == 0) products.AddRange(customer.productsIDInCheckout);
             ClearRegister(register);
             scanned.Remove(customer.gameObject);
 
             Net.Say(customer, InsultedLines.Pick(card));
             customer.state = LeaveState;
 
-            Net.Announce("That customer paid honestly! They stormed out insulted, and the sale is lost.");
+            var back = Restock.Return(products);
+            string where = back.shelved > 0 && back.stored > 0 ? $"{back.shelved} back on the shelves and {back.stored} into storage"
+                : back.stored > 0 ? $"{Things(back.stored)} back into storage"
+                : $"{Things(back.shelved)} back on the shelves";
+            string lost = back.lost > 0 ? $" {Things(back.lost)} didn't fit anywhere and {(back.lost == 1 ? "was" : "were")} lost." : "";
+            Net.Announce(products.Count == 0
+                ? "That customer paid honestly! They stormed out insulted, and the sale is lost."
+                : $"That customer paid honestly! They stormed out insulted and the sale is lost, but their shopping went {where}.{lost}");
         }
+
+        static string Things(int n) => n == 1 ? "1 item" : $"{n} items";
 
         static bool Showing(Data_Container register, string path)
         {

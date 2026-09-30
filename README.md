@@ -88,8 +88,10 @@ Stand near the register while they're paying and press **G** to check the paymen
 
 - **Fraud caught:** the customer grabs everything that was scanned (the bags vanish from the counter) and runs off
   like any other thief. Hit them, or let security guards chase them, to get the products back.
-- **Honest customer accused:** they storm out insulted without paying, and the sale is lost. They say so above their
-  head ("I want to speak to your manager!"), with lines of their own for cash and for cards; players without the mod don't see these.
+- **Honest customer accused:** they storm out insulted without paying, and the sale is lost, but what they had scanned
+  goes straight back into stock: onto a shelf row that already holds that product and has room, otherwise into a
+  storage box of that product, otherwise as a new box in an empty storage slot. The chat says where it went. The customer tells you what they
+  think of the accusation above their head ("I want to speak to your manager!"), with lines of their own for cash and for cards; players without the mod don't see these.
 - **Nobody checks:** the payment goes through like any other and the customer leaves with their shopping. At the end
   of the day the fake bills turn up in the till and the card company takes back what stolen cards paid: the total comes
   off the store's funds and shows up as its own line in the end-of-day summary ("Fake cash & stolen cards"), included

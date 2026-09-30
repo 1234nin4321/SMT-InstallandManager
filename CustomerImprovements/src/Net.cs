@@ -22,6 +22,7 @@ namespace SMTCustomerImprovements
         const string ChildPrefix = "<b>customer-improvements:child:";
         const string PartyPrefix = "<b>customer-improvements:party:";
         const string HoboPrefix = "<b>customer-improvements:hobo:";
+        const string StonerPrefix = "<b>customer-improvements:stoner:";
         // Marks a line to show above a customer's head as it is, instead of looking it up in the game's translations
         const string SayKey = "SMTCustomerImprovements.Say:";
         const string Suffix = "</b>";
@@ -127,6 +128,9 @@ namespace SMTCustomerImprovements
         // Tells every player with the mod to give this customer the stink cloud
         public static void SendHobo(NPC_Info hobo) => Send(HoboPrefix + hobo.netId + Suffix);
 
+        // Tells every player with the mod to give this customer the hazy glow
+        public static void SendStoner(NPC_Info stoner) => Send(StonerPrefix + stoner.netId + Suffix);
+
         public static void SendDayLosses(string totals) => Send(DayPrefix + totals + Suffix);
 
         public static void Announce(string message)
@@ -195,6 +199,11 @@ namespace SMTCustomerImprovements
                 if (message.StartsWith(HoboPrefix))
                 {
                     Hobos.Received(message.Substring(HoboPrefix.Length).Replace(Suffix, ""));
+                    return false;
+                }
+                if (message.StartsWith(StonerPrefix))
+                {
+                    Stoners.Received(message.Substring(StonerPrefix.Length).Replace(Suffix, ""));
                     return false;
                 }
                 if (message.StartsWith(PartyPrefix))

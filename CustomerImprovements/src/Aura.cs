@@ -6,10 +6,10 @@ using UnityEngine;
 
 namespace SMTCustomerImprovements
 {
-    enum AuraStyle { Party, Stink }
+    enum AuraStyle { Party, Stink, Haze }
 
     // A glow around a customer's whole body, drawn with the highlight effect the game uses elsewhere.
-    // Party-goers cycle through the colours; hobos pulse a murky green and brown.
+    // Party-goers cycle through the colours; hobos pulse a murky green and brown; stoners drift in a hazy green.
     // Runs on every player with the mod: the host names the customer, and each player adds the glow once the
     // customer's model is there.
     static class Aura
@@ -25,6 +25,8 @@ namespace SMTCustomerImprovements
 
         static readonly Color StinkFrom = new Color(0.45f, 0.55f, 0.1f);
         static readonly Color StinkTo = new Color(0.4f, 0.25f, 0.08f);
+        static readonly Color HazeFrom = new Color(0.3f, 0.8f, 0.3f);
+        static readonly Color HazeTo = new Color(0.65f, 0.75f, 0.65f);
 
         static readonly List<(uint netId, AuraStyle style, float until)> pending = new List<(uint, AuraStyle, float)>();
         static readonly List<Glow> glows = new List<Glow>();
@@ -57,6 +59,8 @@ namespace SMTCustomerImprovements
         {
             if (glow.style == AuraStyle.Party)
                 return Color.HSVToRGB(Mathf.Repeat(glow.offset + Time.time * 0.3f, 1f), 0.85f, 1f);
+            if (glow.style == AuraStyle.Haze)
+                return Color.Lerp(HazeFrom, HazeTo, (Mathf.Sin((glow.offset + Time.time) * 0.5f) + 1f) / 2f);
             float wave = (Mathf.Sin((glow.offset + Time.time) * 1.2f) + 1f) / 2f;
             return Color.Lerp(StinkFrom, StinkTo, wave);
         }

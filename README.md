@@ -83,7 +83,7 @@ calls in lines the game's chat never shows.
 
 ## SMT Customer Improvements (optional plugin)
 
-Changes to how customers behave: payment fraud, families, party animals, hobos and a customer counter.
+Changes to how customers behave: payment fraud, families, party animals, hobos, stoners and a customer counter.
 
 **Payment fraud.** Now and then (10% of payments by default) a customer at a register pays with fake cash or a stolen credit card.
 Stand near the register while they're paying and press **G** to check the payment:
@@ -135,6 +135,14 @@ shopping like any other thief, and 40% of those who pay use fake cash or a stole
 They mumble now and then ("Spare some change?"). Press **F11** to send one in straight away (host only).
 Settings in F1: on/off, hobo chance, steal chance, fraud chance, how often and how much trash, the smell
 complaints, the stink cloud, the mumbles and the key.
+
+**Stoners.** Now and then (an 8% chance each minute the store is open) a customer who is high on weed shuffles in
+with the munchies, wrapped in a hazy green glow. They walk a bit slower than other customers and buy about 6
+things, all snacks (found with the party animals' snack keywords; if the store sells no snacks, no stoner comes).
+They mumble about food now and then ("Do chips have feelings?"), and once they get to a register they ask the
+cashier whether there's any weed behind the checkout ("Psst... you got any weed back there?"). An employee working
+that register answers ("We have oregano in aisle 3."). Press **F8** to send one in straight away (host only).
+Settings in F1: on/off, stoner chance, how many snacks, the hazy glow, the mumbles and the key.
 
 **Customer count.** A box at the right side of the screen, a quarter of the way down, shows how many customers
 are in the store right now ("Customers: 12"). It counts every customer the game is running, including those still

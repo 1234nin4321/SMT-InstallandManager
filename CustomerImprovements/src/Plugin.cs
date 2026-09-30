@@ -10,7 +10,7 @@ namespace SMTCustomerImprovements
     {
         public const string Guid = "smt.installandmanager.customerimprovements";
         public const string Name = "SMT Customer Improvements";
-        public const string Version = "0.4.1";
+        public const string Version = "0.5.0";
 
         internal static BepInEx.Logging.ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -48,6 +48,12 @@ namespace SMTCustomerImprovements
         internal static ConfigEntry<bool> HoboAura;
         internal static ConfigEntry<bool> HoboMumbles;
         internal static ConfigEntry<KeyboardShortcut> HoboNow;
+        internal static ConfigEntry<bool> StonersEnabled;
+        internal static ConfigEntry<float> StonerChance;
+        internal static ConfigEntry<int> StonerSnacks;
+        internal static ConfigEntry<bool> StonerAura;
+        internal static ConfigEntry<bool> StonerMumbles;
+        internal static ConfigEntry<KeyboardShortcut> StonerNow;
 
         void Awake()
         {
@@ -140,6 +146,21 @@ namespace SMTCustomerImprovements
             HoboNow = Config.Bind("Hobos", "Hobo now", new KeyboardShortcut(KeyCode.F11),
                 "Sends in a hobo straight away (host only)");
 
+            StonersEnabled = Config.Bind("Stoners", "Enabled", true,
+                "Now and then a customer high on weed comes in with the munchies, buys only snacks and asks the cashier for weed (host only)");
+            StonerChance = Config.Bind("Stoners", "Stoner chance per minute", 0.08f,
+                new ConfigDescription("Chance each minute the store is open that a stoner shuffles in (host only)",
+                    new AcceptableValueRange<float>(0f, 1f)));
+            StonerSnacks = Config.Bind("Stoners", "Snacks", 6,
+                new ConfigDescription("About how many snacks a stoner buys; they use the party animals' snack keywords (host only)",
+                    new AcceptableValueRange<int>(1, 20)));
+            StonerAura = Config.Bind("Stoners", "Hazy glow", true,
+                "A hazy green glow hangs around stoners");
+            StonerMumbles = Config.Bind("Stoners", "Mumbles", true,
+                "Stoners now and then mumble about food above their heads (host only)");
+            StonerNow = Config.Bind("Stoners", "Stoner now", new KeyboardShortcut(KeyCode.F8),
+                "Sends in a stoner straight away (host only)");
+
             new Harmony(Guid).PatchAll(typeof(CustomerImprovementsPlugin).Assembly);
             Logger.LogInfo($"{Name} {Version} loaded.");
         }
@@ -151,6 +172,7 @@ namespace SMTCustomerImprovements
             PaymentHint.Update();
             Party.Update();
             Hobos.Update();
+            Stoners.Update();
             Aura.Update();
         }
 

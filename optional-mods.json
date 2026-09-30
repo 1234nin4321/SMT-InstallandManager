@@ -30,7 +30,7 @@
     },
     {
       "name": "Customer Improvements",
-      "description": "Families, party animals, smelly hobos, a customer counter, and fraudsters paying with fake cash or stolen cards",
+      "description": "Families, party animals, smelly hobos, stoners with the munchies, a customer counter, and fraudsters paying with fake cash or stolen cards",
       "asset": "^SMTCustomerImprovements_v.*\\.zip$",
       "file": "BepInEx/plugins/SMTCustomerImprovements/SMTCustomerImprovements.dll",
       "selected": false

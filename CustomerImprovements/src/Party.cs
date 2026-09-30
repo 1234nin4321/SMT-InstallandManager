@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Mirror;
 using UnityEngine;
 
@@ -8,9 +6,6 @@ namespace SMTCustomerImprovements
 {
     // Now and then a group of at least five men comes in for a party. They are ordinary customers who walk in
     // together, glow with a colour-cycling aura and buy nothing but alcohol and snacks, lots of it.
-    //
-    // Products have no categories, so alcohol and snacks are found by keywords in the product's name (in the
-    // player's language) and in the name of its model.
     static class Party
     {
         class Group
@@ -24,7 +19,6 @@ namespace SMTCustomerImprovements
         static readonly List<Group> groups = new List<Group>();
         static readonly HashSet<NPC_Info> partyGoers = new HashSet<NPC_Info>();
         static float nextRoll;
-        static string lastProductsLog;
 
         static readonly string[] Shouts =
         {
@@ -99,47 +93,8 @@ namespace SMTCustomerImprovements
         }
 
         // Products the store sells whose name or model says alcohol or snack
-        static List<int> PartyProducts()
-        {
-            var keywords = Keywords(CustomerImprovementsPlugin.AlcoholKeywords.Value)
-                .Concat(Keywords(CustomerImprovementsPlugin.SnackKeywords.Value)).ToList();
-            var listing = ProductListing.Instance;
-            var found = new List<int>();
-            var names = new List<string>();
-            if (listing == null || keywords.Count == 0) return found;
-
-            foreach (int id in listing.availableProducts)
-            {
-                if (id < 0 || id >= listing.productsData.Length) continue;
-                var data = listing.productsData[id];
-                string name = LocalizationManager.instance != null ? LocalizationManager.instance.GetLocalizationString("product" + id) : "";
-                string text = Words(name) + " " + Words(data.productPrefab != null ? data.productPrefab.name : "") + " " + Words(data.productBrand);
-                if (!keywords.Any(k => k.IsMatch(text))) continue;
-                found.Add(id);
-                names.Add(name);
-            }
-
-            // Listed once in the BepInEx log whenever it changes, to help tune the keywords
-            string log = string.Join(", ", names);
-            if (log != lastProductsLog)
-            {
-                lastProductsLog = log;
-                CustomerImprovementsPlugin.Log.LogInfo($"Party products ({found.Count}): {log}");
-            }
-            return found;
-        }
-
-        // "beer" also matches "beers" and "Beer_Can01", but "gin" doesn't match "original"
-        static IEnumerable<Regex> Keywords(string list) =>
-            list.Split(',').Select(k => k.Trim().ToLowerInvariant()).Where(k => k.Length > 0)
-                .Select(k => new Regex(@"\b" + Regex.Escape(k) + @"(s|es)?\b"));
-
-        static string Words(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return "";
-            name = Regex.Replace(name, "([a-z])([A-Z])", "$1 $2");
-            return Regex.Replace(name, @"[_\-\.\d]+", " ").ToLowerInvariant();
-        }
+        static List<int> PartyProducts() => ProductKeywords.Find("Party products",
+            CustomerImprovementsPlugin.AlcoholKeywords.Value, CustomerImprovementsPlugin.SnackKeywords.Value);
 
         // Host: now and then someone in the group shouts something
         static void Shout()

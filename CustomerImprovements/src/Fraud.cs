@@ -143,7 +143,7 @@ namespace SMTCustomerImprovements
         }
 
         // The employee working this register
-        static NPC_Info Cashier(Data_Container register)
+        internal static NPC_Info Cashier(Data_Container register)
         {
             var manager = NPC_Manager.Instance;
             int index = register.transform.GetSiblingIndex();

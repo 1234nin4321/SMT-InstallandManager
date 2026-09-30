@@ -7,7 +7,7 @@ using UnityEngine;
 namespace SMTCustomerImprovements
 {
     // Everything that goes between the host and the other players, plus the players' side of payment fraud:
-    // the key that checks a payment and the hint that fake bills and stolen cards look off.
+    // the key that checks a payment and the flashing hint on fake bills and stolen cards.
     //
     // It all goes through the game's chat calls. The game's chat drops any message containing "</b>", so players
     // without the mod never see these lines, and a host without the mod passes them on unseen.
@@ -20,6 +20,8 @@ namespace SMTCustomerImprovements
         const string SayPrefix = "<b>customer-improvements:say:";
         const string DayPrefix = "<b>customer-improvements:day:";
         const string ChildPrefix = "<b>customer-improvements:child:";
+        const string PartyPrefix = "<b>customer-improvements:party:";
+        const string HoboPrefix = "<b>customer-improvements:hobo:";
         // Marks a line to show above a customer's head as it is, instead of looking it up in the game's translations
         const string SayKey = "SMTCustomerImprovements.Say:";
         const string Suffix = "</b>";
@@ -27,11 +29,8 @@ namespace SMTCustomerImprovements
         // How close a player has to be to a register to check its payment
         const float Reach = 4f;
 
-        static readonly Color FakeCashTint = new Color(0.75f, 0.55f, 1f);
-        static readonly Color StolenCardTint = new Color(1f, 0.45f, 0.45f);
-        static readonly string[] PaymentPaths = { "Payments/Payment_Money", "Payments/Payment_Card" };
         static readonly string[] PendingPaths =
-            { "Payments/Payment_Money", "Payments/Payment_Card", "CashRegisterCanvas/Container", "CreditCardCanvas/Container" };
+            { PaymentHint.CashPath, PaymentHint.CardPath, "CashRegisterCanvas/Container", "CreditCardCanvas/Container" };
 
         static readonly Action<PlayerObjectController, string, string> ReceiveChatMsg =
             AccessTools.MethodDelegate<Action<PlayerObjectController, string, string>>(
@@ -62,26 +61,27 @@ namespace SMTCustomerImprovements
             if (player != null) player.SendChatMsg(CheckPrefix + register.netId + Suffix);
         }
 
-        // The register closest to the player where a customer is paying
+        // The register closest to the player where a customer is paying. Only the host keeps the registers in the
+        // game's register folder; on the other players' side they sit elsewhere, so they're looked up by type.
         static Data_Container NearestPayingRegister()
         {
-            var manager = NPC_Manager.Instance;
             var camera = Camera.main;
-            if (manager == null || manager.checkoutOBJ == null || camera == null) return null;
+            if (camera == null) return null;
 
             Data_Container nearest = null;
             float best = Reach;
-            foreach (Transform child in manager.checkoutOBJ.transform)
+            foreach (var register in UnityEngine.Object.FindObjectsOfType<Data_Container>())
             {
-                float distance = Vector3.Distance(camera.transform.position, child.position);
-                if (distance > best) continue;
-                var register = child.GetComponent<Data_Container>();
-                if (register == null || !PaymentPending(register)) continue;
+                float distance = Vector3.Distance(camera.transform.position, register.transform.position);
+                if (distance > best || !IsRegister(register) || !PaymentPending(register)) continue;
                 nearest = register;
                 best = distance;
             }
             return nearest;
         }
+
+        // Registers are the containers with a spot where customers hand over their payment
+        static bool IsRegister(Data_Container container) => container.transform.Find("Payments") != null;
 
         static bool PaymentPending(Data_Container register)
         {
@@ -121,6 +121,12 @@ namespace SMTCustomerImprovements
         public static void SendChild(NPC_Info child, float size) =>
             Send(ChildPrefix + child.netId + ":" + size.ToString(System.Globalization.CultureInfo.InvariantCulture) + Suffix);
 
+        // Tells every player with the mod to give this customer the party aura
+        public static void SendParty(NPC_Info member) => Send(PartyPrefix + member.netId + Suffix);
+
+        // Tells every player with the mod to give this customer the stink cloud
+        public static void SendHobo(NPC_Info hobo) => Send(HoboPrefix + hobo.netId + Suffix);
+
         public static void SendDayLosses(string totals) => Send(DayPrefix + totals + Suffix);
 
         public static void Announce(string message)
@@ -152,27 +158,7 @@ namespace SMTCustomerImprovements
         static Data_Container FindRegister(uint netId)
         {
             var register = FindSpawned<Data_Container>(netId);
-            var manager = NPC_Manager.Instance;
-            if (register == null || manager == null || register.transform.parent != manager.checkoutOBJ.transform) return null;
-            return register;
-        }
-
-        static void Tint(Data_Container register, string path, Color? color)
-        {
-            var part = register.transform.Find(path);
-            if (part == null) return;
-
-            MaterialPropertyBlock block = null;
-            if (color.HasValue)
-            {
-                block = new MaterialPropertyBlock();
-                block.SetColor("_Color", color.Value);
-                block.SetColor("_BaseColor", color.Value);
-            }
-            foreach (var renderer in part.GetComponentsInChildren<Renderer>(true))
-                renderer.SetPropertyBlock(block);
-            foreach (var ui in part.GetComponentsInChildren<CanvasRenderer>(true))
-                ui.SetColor(color ?? Color.white);
+            return register != null && IsRegister(register) ? register : null;
         }
 
         // Runs on the host when a player sends a chat line
@@ -206,6 +192,16 @@ namespace SMTCustomerImprovements
                     ShowLine(message.Substring(SayPrefix.Length));
                     return false;
                 }
+                if (message.StartsWith(HoboPrefix))
+                {
+                    Hobos.Received(message.Substring(HoboPrefix.Length).Replace(Suffix, ""));
+                    return false;
+                }
+                if (message.StartsWith(PartyPrefix))
+                {
+                    Party.Received(message.Substring(PartyPrefix.Length).Replace(Suffix, ""));
+                    return false;
+                }
                 if (message.StartsWith(ChildPrefix))
                 {
                     Families.Received(message.Substring(ChildPrefix.Length).Replace(Suffix, ""));
@@ -222,11 +218,7 @@ namespace SMTCustomerImprovements
                 if (CustomerImprovementsPlugin.ShowHint.Value && parts.Length == 2 && uint.TryParse(parts[0], out var netId))
                 {
                     var register = FindRegister(netId);
-                    if (register != null)
-                    {
-                        bool cash = parts[1] == "cash";
-                        Tint(register, cash ? PaymentPaths[0] : PaymentPaths[1], cash ? FakeCashTint : StolenCardTint);
-                    }
+                    if (register != null) PaymentHint.Start(register, cash: parts[1] == "cash");
                 }
                 return false;
             }
@@ -266,7 +258,7 @@ namespace SMTCustomerImprovements
         {
             static void Postfix(Data_Container __instance)
             {
-                foreach (var path in PaymentPaths) Tint(__instance, path, null);
+                PaymentHint.Stop(__instance);
             }
         }
     }

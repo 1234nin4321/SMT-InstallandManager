@@ -24,6 +24,10 @@ namespace SMTCustomerImprovements
         // The game's own states: a thief roaming the store, and a customer heading out without paying
         const int ThiefRoamState = 11;
         const int LeaveState = 98;
+        // The employee job that works a register
+        const int CashierTask = 1;
+        // Even the best security misses one now and then
+        const float MostCatchChance = 0.95f;
 
         // Called on the host when a player asks to check the payment at a register
         public static void Check(Data_Container register)
@@ -36,7 +40,7 @@ namespace SMTCustomerImprovements
             if (fraudsters.TryGetValue(npc, out var kind))
             {
                 fraudsters.Remove(npc);
-                Catch(register, customer, kind, byEmployee: false);
+                Catch(register, customer, kind, cashier: null);
             }
             else
             {
@@ -44,7 +48,7 @@ namespace SMTCustomerImprovements
             }
         }
 
-        static void Catch(Data_Container register, NPC_Info customer, FraudKind kind, bool byEmployee)
+        static void Catch(Data_Container register, NPC_Info customer, FraudKind kind, NPC_Info cashier)
         {
             float value = register.checkoutProductValue;
             ClearRegister(register);
@@ -72,7 +76,9 @@ namespace SMTCustomerImprovements
             RunLikeAThief(customer);
 
             string what = kind == FraudKind.Cash ? "Fake cash" : "Stolen credit card";
-            string who = byEmployee ? "The cashier spotted it" : "Caught";
+            string who = cashier == null ? "Caught"
+                : string.IsNullOrEmpty(cashier.NPCName) ? "The cashier spotted it"
+                : $"{cashier.NPCName} spotted it at the register";
             Net.Announce($"{who}: {what}! The customer grabbed their shopping and is making a run for it. Stop the thief!");
         }
 
@@ -122,6 +128,29 @@ namespace SMTCustomerImprovements
             register.RpcClearCheckoutData();
         }
 
+        // The employee working this register
+        static NPC_Info Cashier(Data_Container register)
+        {
+            var manager = NPC_Manager.Instance;
+            int index = register.transform.GetSiblingIndex();
+            foreach (Transform employee in manager.employeeParentOBJ.transform)
+            {
+                var info = employee.GetComponent<NPC_Info>();
+                if (info != null && info.taskPriority == CashierTask && info.employeeAssignedCheckoutIndex == index) return info;
+            }
+            return null;
+        }
+
+        // Better security skills catch more: the hiring rating (1-10) and the level earned on the job (1-100)
+        static float CatchChance(NPC_Info cashier)
+        {
+            float chance = CustomerImprovementsPlugin.EmployeeBaseCatchChance.Value;
+            if (cashier != null)
+                chance += cashier.securityValue * CustomerImprovementsPlugin.CatchChancePerSecurityValue.Value
+                    + cashier.securityLevel * CustomerImprovementsPlugin.CatchChancePerSecurityLevel.Value;
+            return Mathf.Min(chance, MostCatchChance);
+        }
+
         static void ForgetGone<T>(Dictionary<GameObject, T> map)
         {
             List<GameObject> gone = null;
@@ -158,7 +187,8 @@ namespace SMTCustomerImprovements
                 if (npc == null) return;
                 var customer = npc.GetComponent<NPC_Info>();
                 if (customer == null || customer.isAThief) return;
-                if (Random.value >= CustomerImprovementsPlugin.FraudChance.Value) return;
+                float chance = Hobos.IsHobo(customer) ? CustomerImprovementsPlugin.HoboFraudChance.Value : CustomerImprovementsPlugin.FraudChance.Value;
+                if (Random.value >= chance) return;
 
                 var kind = index == 0 ? FraudKind.Cash : FraudKind.Card;
                 ForgetGone(fraudsters);
@@ -185,10 +215,16 @@ namespace SMTCustomerImprovements
                 }
                 fraudsters.Remove(npc);
 
-                if (applyEmployeeRate && Random.value < CustomerImprovementsPlugin.EmployeeCatchChance.Value)
+                if (applyEmployeeRate)
                 {
-                    Catch(__instance, npc.GetComponent<NPC_Info>(), kind, byEmployee: true);
-                    return false;
+                    var cashier = Cashier(__instance);
+                    if (Random.value < CatchChance(cashier))
+                    {
+                        // Spotting fraud trains security the way stopping a thief does
+                        if (cashier != null) cashier.securityExperience += 5 * cashier.securityValue;
+                        Catch(__instance, npc.GetComponent<NPC_Info>(), kind, cashier);
+                        return false;
+                    }
                 }
 
                 // Paid like any other purchase; the money goes again at the end of the day

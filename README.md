@@ -81,7 +81,7 @@ calls in lines the game's chat never shows.
 
 ## SMT Customer Improvements (optional plugin)
 
-Changes to how customers behave: payment fraud, families and a customer counter.
+Changes to how customers behave: payment fraud, families, party animals, hobos and a customer counter.
 
 **Payment fraud.** Now and then (10% of payments by default) a customer at a register pays with fake cash or a stolen credit card.
 Stand near the register while they're paying and press **G** to check the payment:
@@ -95,10 +95,13 @@ Stand near the register while they're paying and press **G** to check the paymen
   off the store's funds and shows up as its own line in the end-of-day summary ("Fake cash & stolen cards"), included
   in the day's balance. Players need the mod to see that line; the host also posts the losses in the chat.
 
-Fake bills are tinted purple and stolen cards red, so a sharp eye can spot them (setting *Show hint*).
-Employees working a register spot fraud half the time (setting *Employee catch chance*). The host posts what happened
+Fake bills flash, pulsing between purple and yellow, and stolen cards between red and blue, until the payment is
+over (setting *Show hint*).
+Employees working a register spot fraud depending on their security skills: 20%, plus 4% per point of their
+security rating (1–10), plus 0.5% per security level they've earned (1–100), up to 95%. A rookie catches about a
+quarter, a top-rated veteran most of them, and every catch earns them security experience like stopping a thief does. The host posts what happened
 in the game chat (setting *Announce in chat*), which every player sees.
-Settings in F1: on/off, fraud chance, employee catch chance, the hint, the check key and the chat lines.
+Settings in F1: on/off, fraud chance, the three employee catch chance numbers, the hint, the check key and the chat lines.
 Players send their check to the host through the game's own chat calls, in lines the game's chat never shows.
 
 **Families.** Some customers (20% by default) come in with one or two children. The game has no child models, so a
@@ -109,13 +112,33 @@ Settings in F1: on/off, family chance, most children (up to 3), extra items per 
 talk. Players without the mod see children as full-size customers following their parent around and don't see what
 they say; players who join after a family came in see those children at full size too.
 
+**Party animals.** Now and then (a 10% chance each minute the store is open) a group of 5 to 8 men walks in
+together to stock up for a party. They're ordinary customers, but they glow with an aura that cycles through the
+colours, buy about 12 things each, all alcohol and snacks, and shout now and then ("Grab the beer, boys!").
+The game has no product categories, so alcohol and snacks are found by keywords in the product names (beer, wine,
+vodka, chips, candy, ...); the BepInEx log lists which products matched, and both keyword lists can be changed in F1.
+If the store sells nothing that matches, no party comes. Party-goers use the male models (the first 53, as the game
+itself assumes). Press **F10** to send one in straight away (host only).
+Settings in F1: on/off, party chance, smallest and biggest party, items each, the keyword lists, the aura, the shouts
+and the key.
+
+**Hobos.** Now and then (an 8% chance each minute the store is open) a hobo wanders in, wrapped in a murky green
+and brown glow. They buy a few things like any customer but drop a piece of garbage every 8 seconds or so, up to 10,
+wherever they walk on the store floor. It's the game's own trash, so cleaners and cleaning robots pick it up.
+Customers who get within a few metres complain about the smell ("Did something die in here?"), and each complaint
+counts towards the day's complaints about filth. Hobos are trouble at the register too: 35% of them steal their
+shopping like any other thief, and 40% of those who pay use fake cash or a stolen card (instead of 10%).
+They mumble now and then ("Spare some change?"). Press **F11** to send one in straight away (host only).
+Settings in F1: on/off, hobo chance, steal chance, fraud chance, how often and how much trash, the smell
+complaints, the stink cloud, the mumbles and the key.
+
 **Customer count.** A box at the right side of the screen, a quarter of the way down, shows how many customers
 are in the store right now ("Customers: 12"). It counts every customer the game is running, including those still
 walking in from the street or on their way out; children aren't counted. Every player who has the mod sees it,
 host or not. Turn it off in F1 (*Customer count* → *Show*).
 
 Everything is decided by the host; other players need the mod to check payments and see the hints, the summary line,
-the children's size and what customers say.
+the children's size, the party aura, the stink cloud and what customers say.
 
 ## Layout
 

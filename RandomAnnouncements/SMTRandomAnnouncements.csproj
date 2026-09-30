@@ -5,7 +5,7 @@
     <AssemblyName>SMTRandomAnnouncements</AssemblyName>
     <RootNamespace>SMTRandomAnnouncements</RootNamespace>
     <Product>SMT Random Announcements</Product>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;

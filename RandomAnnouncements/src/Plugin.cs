@@ -10,7 +10,7 @@ namespace SMTRandomAnnouncements
     {
         public const string Guid = "smt.installandmanager.randomannouncements";
         public const string Name = "SMT Random Announcements";
-        public const string Version = "0.1.1";
+        public const string Version = "0.1.2";
 
         internal static RandomAnnouncementsPlugin Instance;
         internal static ConfigEntry<int> PerDay;

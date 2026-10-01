@@ -10,7 +10,7 @@ namespace SMTCustomerImprovements
     {
         public const string Guid = "smt.installandmanager.customerimprovements";
         public const string Name = "SMT Customer Improvements";
-        public const string Version = "0.6.0";
+        public const string Version = "0.6.1";
 
         internal static BepInEx.Logging.ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -165,7 +165,7 @@ namespace SMTCustomerImprovements
                 "Sends in a stoner straight away (host only)");
 
             CartsEnabled = Config.Bind("Shopping carts", "Enabled", true,
-                "Every customer pushes a shopping cart. Only for show, and only players with the mod see them");
+                "Every customer pushes a shopping cart inside the shop. Only for show, and only players with the mod see them");
             CartSize = Config.Bind("Shopping carts", "Cart size", 1f,
                 new ConfigDescription("How big the carts are", new AcceptableValueRange<float>(0.6f, 1.5f)));
             CartProducts = Config.Bind("Shopping carts", "Show products", true,

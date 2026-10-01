@@ -144,8 +144,8 @@ cashier whether there's any weed behind the checkout ("Psst... you got any weed 
 that register answers ("We have oregano in aisle 3."). Press **F8** to send one in straight away (host only).
 Settings in F1: on/off, stoner chance, how many snacks, the hazy glow, the mumbles and the key.
 
-**Shopping carts.** Every customer pushes a shopping cart, with both hands on the handle, and what they've picked up
-so far lies in the basket: copies of the products' own models, shrunk to fit if they're big, up to 24 in two layers.
+**Shopping carts.** Every customer pushes a shopping cart once they're inside the shop (not out on the street), with
+both hands on the handle, and what they've picked up so far lies in the basket: copies of the products' own models, shrunk to fit if they're big, up to 24 in two layers.
 At the register the cart empties as the products go onto the counter. Carts are only for show: customers walk where
 they always did, so a cart can pass through a shelf or another customer. Each player with the mod sees the carts;
 what's in them comes from the host, so with a host without the mod the carts stay empty. Players without the mod

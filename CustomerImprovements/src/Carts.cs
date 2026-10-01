@@ -8,8 +8,10 @@ using UnityEngine;
 
 namespace SMTCustomerImprovements
 {
-    // Every customer pushes a shopping cart, with what they've picked up so far lying in it.
+    // Every customer pushes a shopping cart inside the shop, with what they've picked up so far lying in it.
     //
+    // Out on the street there's no cart: it shows once the customer is in the area the map lets players build in,
+    // which is the shop floor, and goes again when they walk out.
     // Carts are only for show and each player with the mod makes their own: the cart is a model hanging in front of
     // the customer, and after the animation has run the customer's arms are bent to put their hands on the handle.
     // Only the host knows what a customer has picked up, so the host sends what's in each cart whenever it changes;
@@ -303,15 +305,27 @@ namespace SMTCustomerImprovements
             return new Arm { upper = upper, fore = fore, hand = hand, side = sign };
         }
 
-        // Every player, after the animation: hands on the handle
+        // Every player, after the animation: carts only in the shop, and hands on the handle
         public static void LateUpdate()
         {
             foreach (var cart in carts.Values)
             {
                 if (cart.obj == null || cart.npc == null) continue;
+                bool inside = InShop(cart.npc.transform.position);
+                if (cart.obj.activeSelf != inside) cart.obj.SetActive(inside);
+                if (!inside) continue;
                 Reach(cart, cart.right);
                 Reach(cart, cart.left);
             }
+        }
+
+        // The map's build area, which every player knows. Before the map is loaded every customer counts as inside
+        static bool InShop(Vector3 position)
+        {
+            var layout = LayoutReferences.Instance;
+            if (layout == null) return true;
+            return position.x > layout.buildXLimit.x && position.x < layout.buildXLimit.y
+                && position.z > layout.buildZLimit.x && position.z < layout.buildZLimit.y;
         }
 
         static void Reach(Cart cart, Arm arm)

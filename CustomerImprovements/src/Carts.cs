@@ -2,22 +2,27 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using HarmonyLib;
 using Mirror;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace SMTCustomerImprovements
 {
     // Every customer pushes a shopping cart inside the shop, with what they've picked up so far lying in it.
     //
     // Out on the street there's no cart: it shows once the customer is in the area the map lets players build in,
-    // which is the shop floor, and goes again when they walk out.
+    // which is the shop floor, and goes again when they walk out. Half a metre either side of the edge, so a customer
+    // standing on it doesn't make the cart blink.
     // Carts are only for show and each player with the mod makes their own: the cart is a model hanging in front of
     // the customer, and after the animation has run the customer's arms are bent to put their hands on the handle.
     // Only the host knows what a customer has picked up, so the host sends what's in each cart whenever it changes;
     // each player then puts copies of those products' own models into the cart.
     //
-    // The model (ShoppingCart.obj and ShoppingCart.png, by mechano-file, MIT License) is loaded from the mod's folder.
+    // The model (ShoppingCart.obj and ShoppingCart.png, by mechano-file, MIT License) is loaded from the mod's folder,
+    // read on another thread as soon as the game starts so loading it doesn't stall the game when customers come.
+    // Neither the carts nor the products in them cast shadows unless the player turns cart shadows on.
     static class Carts
     {
         class Arm
@@ -34,6 +39,7 @@ namespace SMTCustomerImprovements
             public readonly List<int> shown = new List<int>();
             public List<int> wanted;
             public Arm right, left;
+            public bool inside;
         }
 
         // The model is in centimetres. Scaled so the handle is about 95 cm off the floor
@@ -54,6 +60,9 @@ namespace SMTCustomerImprovements
         static readonly float[] Rows = { 0.37f, 0.53f, 0.69f, 0.85f };
         const int MostItems = 24;
 
+        // How far past the edge of the shop floor a customer has to be for their cart to show or go
+        const float EdgeMargin = 0.5f;
+
         const float ScanEvery = 0.5f;
         const float SendEvery = 1f;
 
@@ -62,6 +71,7 @@ namespace SMTCustomerImprovements
         static Mesh mesh;
         static Material material;
         static bool loadFailed;
+        static Task<(ObjModel.Data model, byte[] texture)> reading;
 
         static readonly Dictionary<NPC_Info, Cart> carts = new Dictionary<NPC_Info, Cart>();
         // Every player: what the host says is in each customer's cart, until that cart is there to fill
@@ -80,7 +90,7 @@ namespace SMTCustomerImprovements
                 if (carts.Count > 0) RemoveAll();
                 return;
             }
-            if (!NetworkClient.active) return;
+            if (!Load() || !NetworkClient.active) return;
 
             if (Time.time >= nextScan)
             {
@@ -94,20 +104,22 @@ namespace SMTCustomerImprovements
             }
         }
 
-        // Every player: gives new customers a cart, forgets those who have gone, and fills carts
+        // Every player: gives new customers a cart, forgets those who have gone, and fills carts.
+        // The game keeps every customer under the same parent object, on the host and on the other players' side
         static void Scan()
         {
-            foreach (var identity in NetworkClient.spawned.Values)
-            {
-                if (identity == null) continue;
-                var npc = identity.GetComponent<NPC_Info>();
-                if (npc == null || !npc.isCustomer || npc.isEmployee || carts.ContainsKey(npc) || CharacterOBJ(npc) == null) continue;
-                if (!Load()) return;
-                carts[npc] = Make(npc);
-            }
+            var manager = NPC_Manager.Instance;
+            if (manager != null && manager.customersnpcParentOBJ != null)
+                foreach (Transform child in manager.customersnpcParentOBJ.transform)
+                {
+                    var npc = child.GetComponent<NPC_Info>();
+                    if (npc == null || !npc.isCustomer || npc.isEmployee || carts.ContainsKey(npc) || CharacterOBJ(npc) == null) continue;
+                    carts[npc] = Make(npc);
+                }
 
             List<NPC_Info> gone = null;
             float size = CustomerImprovementsPlugin.CartSize.Value;
+            var shadows = CustomerImprovementsPlugin.CartShadows.Value ? ShadowCastingMode.On : ShadowCastingMode.Off;
             foreach (var pair in carts)
             {
                 var cart = pair.Value;
@@ -118,6 +130,12 @@ namespace SMTCustomerImprovements
                 }
                 cart.obj.transform.localScale = Vector3.one * size;
                 cart.obj.transform.localPosition = new Vector3(0f, 0f, Ahead * size);
+                var renderer = cart.obj.GetComponent<MeshRenderer>();
+                if (renderer.shadowCastingMode != shadows)
+                {
+                    renderer.shadowCastingMode = shadows;
+                    foreach (var item in cart.items.GetComponentsInChildren<Renderer>(true)) item.shadowCastingMode = shadows;
+                }
                 if (received.TryGetValue(cart.npc.netId, out var list))
                 {
                     received.Remove(cart.npc.netId);
@@ -135,15 +153,23 @@ namespace SMTCustomerImprovements
             if (received.Count > 50) received.Clear();
         }
 
+        // Reads the files on another thread straight away, then makes the mesh and material once the game's products
+        // are there to copy the shader from. True once the cart is ready
         static bool Load()
         {
             if (mesh != null) return true;
             if (loadFailed) return false;
+            if (reading == null)
+            {
+                string model = Path.Combine(Folder, "ShoppingCart.obj"), texture = Path.Combine(Folder, "ShoppingCart.png");
+                var transform = Matrix4x4.Scale(Vector3.one * Scale) * Matrix4x4.Translate(new Vector3(0f, 0f, HandleBack));
+                reading = Task.Run(() => (ObjModel.Read(model, transform), File.ReadAllBytes(texture)));
+            }
+            if (!reading.IsCompleted || ProductListing.Instance == null) return false;
             try
             {
-                var model = Path.Combine(Folder, "ShoppingCart.obj");
-                var texture = Path.Combine(Folder, "ShoppingCart.png");
-                mesh = ObjModel.Load(model, Matrix4x4.Scale(Vector3.one * Scale) * Matrix4x4.Translate(new Vector3(0f, 0f, HandleBack)));
+                var (model, texture) = reading.Result;
+                mesh = ObjModel.Build(model);
                 material = MakeMaterial(texture);
                 CustomerImprovementsPlugin.Log.LogInfo($"Shopping cart loaded: {mesh.vertexCount} vertices, shader {material.shader.name}.");
                 return true;
@@ -152,16 +178,17 @@ namespace SMTCustomerImprovements
             {
                 loadFailed = true;
                 mesh = null;
-                CustomerImprovementsPlugin.Log.LogError($"Could not load the shopping cart, so customers won't have carts: {e.Message}");
+                var reason = e is System.AggregateException all && all.InnerException != null ? all.InnerException : e;
+                CustomerImprovementsPlugin.Log.LogError($"Could not load the shopping cart, so customers won't have carts: {reason.Message}");
                 return false;
             }
         }
 
         // Lit like the game's products, with the cart's texture
-        static Material MakeMaterial(string texturePath)
+        static Material MakeMaterial(byte[] png)
         {
             var texture = new Texture2D(2, 2, TextureFormat.RGBA32, true);
-            if (!ImageConversion.LoadImage(texture, File.ReadAllBytes(texturePath))) throw new IOException("unreadable texture " + texturePath);
+            if (!ImageConversion.LoadImage(texture, png)) throw new IOException("unreadable texture ShoppingCart.png");
             texture.name = "ShoppingCart";
 
             var shader = ProductShader() ?? Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
@@ -188,7 +215,9 @@ namespace SMTCustomerImprovements
             var obj = new GameObject("SMTShoppingCart");
             obj.transform.SetParent(npc.transform, false);
             obj.AddComponent<MeshFilter>().sharedMesh = mesh;
-            obj.AddComponent<MeshRenderer>().sharedMaterial = material;
+            var renderer = obj.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = CustomerImprovementsPlugin.CartShadows.Value ? ShadowCastingMode.On : ShadowCastingMode.Off;
             var items = new GameObject("Items").transform;
             items.SetParent(obj.transform, false);
 
@@ -200,6 +229,7 @@ namespace SMTCustomerImprovements
                 items = items,
                 right = FindArm(character, "R", 1f),
                 left = FindArm(character, "L", -1f),
+                inside = InShop(npc.transform.position, 0f),
             };
         }
 
@@ -237,6 +267,8 @@ namespace SMTCustomerImprovements
             var item = Object.Instantiate(data.productPrefab, cart.items);
             foreach (var collider in item.GetComponentsInChildren<Collider>(true)) Object.Destroy(collider);
             foreach (var body in item.GetComponentsInChildren<Rigidbody>(true)) Object.Destroy(body);
+            var shadows = cart.obj.GetComponent<MeshRenderer>().shadowCastingMode;
+            foreach (var renderer in item.GetComponentsInChildren<Renderer>(true)) renderer.shadowCastingMode = shadows;
 
             int perLayer = Columns.Length * Rows.Length;
             int layer = place / perLayer, spot = place % perLayer;
@@ -311,21 +343,23 @@ namespace SMTCustomerImprovements
             foreach (var cart in carts.Values)
             {
                 if (cart.obj == null || cart.npc == null) continue;
-                bool inside = InShop(cart.npc.transform.position);
-                if (cart.obj.activeSelf != inside) cart.obj.SetActive(inside);
-                if (!inside) continue;
+                var position = cart.npc.transform.position;
+                if (cart.inside ? !InShop(position, -EdgeMargin) : InShop(position, EdgeMargin)) cart.inside = !cart.inside;
+                if (cart.obj.activeSelf != cart.inside) cart.obj.SetActive(cart.inside);
+                if (!cart.inside) continue;
                 Reach(cart, cart.right);
                 Reach(cart, cart.left);
             }
         }
 
-        // The map's build area, which every player knows. Before the map is loaded every customer counts as inside
-        static bool InShop(Vector3 position)
+        // In the map's build area, which every player knows, by at least `margin` metres (less than that past its edge
+        // when negative). Before the map is loaded every customer counts as inside
+        static bool InShop(Vector3 position, float margin)
         {
             var layout = LayoutReferences.Instance;
             if (layout == null) return true;
-            return position.x > layout.buildXLimit.x && position.x < layout.buildXLimit.y
-                && position.z > layout.buildZLimit.x && position.z < layout.buildZLimit.y;
+            return position.x > layout.buildXLimit.x + margin && position.x < layout.buildXLimit.y - margin
+                && position.z > layout.buildZLimit.x + margin && position.z < layout.buildZLimit.y - margin;
         }
 
         static void Reach(Cart cart, Arm arm)

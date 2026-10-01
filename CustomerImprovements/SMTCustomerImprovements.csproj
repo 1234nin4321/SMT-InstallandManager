@@ -5,7 +5,7 @@
     <AssemblyName>SMTCustomerImprovements</AssemblyName>
     <RootNamespace>SMTCustomerImprovements</RootNamespace>
     <Product>SMT Customer Improvements</Product>
-    <Version>0.6.1</Version>
+    <Version>0.6.2</Version>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;

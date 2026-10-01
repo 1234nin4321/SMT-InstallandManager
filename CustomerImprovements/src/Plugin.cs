@@ -10,7 +10,7 @@ namespace SMTCustomerImprovements
     {
         public const string Guid = "smt.installandmanager.customerimprovements";
         public const string Name = "SMT Customer Improvements";
-        public const string Version = "0.6.1";
+        public const string Version = "0.6.2";
 
         internal static BepInEx.Logging.ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -57,6 +57,7 @@ namespace SMTCustomerImprovements
         internal static ConfigEntry<bool> CartsEnabled;
         internal static ConfigEntry<float> CartSize;
         internal static ConfigEntry<bool> CartProducts;
+        internal static ConfigEntry<bool> CartShadows;
 
         void Awake()
         {
@@ -170,6 +171,8 @@ namespace SMTCustomerImprovements
                 new ConfigDescription("How big the carts are", new AcceptableValueRange<float>(0.6f, 1.5f)));
             CartProducts = Config.Bind("Shopping carts", "Show products", true,
                 "What customers have picked up lies in their cart (the host needs the mod for this)");
+            CartShadows = Config.Bind("Shopping carts", "Shadows", false,
+                "Carts and the products in them cast shadows. Looks nicer, but costs frame rate in a busy store");
             Carts.Folder = System.IO.Path.GetDirectoryName(Info.Location);
 
             new Harmony(Guid).PatchAll(typeof(CustomerImprovementsPlugin).Assembly);

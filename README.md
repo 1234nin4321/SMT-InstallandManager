@@ -149,8 +149,9 @@ both hands on the handle, and what they've picked up so far lies in the basket: 
 At the register the cart empties as the products go onto the counter. Carts are only for show: customers walk where
 they always did, so a cart can pass through a shelf or another customer. Each player with the mod sees the carts;
 what's in them comes from the host, so with a host without the mod the carts stay empty. Players without the mod
-see customers as usual.
-Settings in F1: on/off, cart size and whether products show in the cart.
+see customers as usual. Carts and the products in them don't cast shadows unless you turn that on, which keeps
+busy stores smooth.
+Settings in F1: on/off, cart size, whether products show in the cart, and shadows.
 The shopping cart model is by mechano-file, used under the MIT License
 ([`CustomerImprovements/assets/LICENSE-ShoppingCart.txt`](CustomerImprovements/assets/LICENSE-ShoppingCart.txt)),
 which ships in the mod's zip with the model.

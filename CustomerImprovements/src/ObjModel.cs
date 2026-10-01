@@ -7,11 +7,21 @@ namespace SMTCustomerImprovements
 {
     // Reads a Wavefront .obj file into a Unity mesh. Only what the shopping cart needs: positions, texture
     // coordinates, normals and polygon faces, all in one mesh with one material.
+    // Reading the file is slow and can run on another thread; only Build, which makes the mesh, needs Unity's thread.
     static class ObjModel
     {
+        public class Data
+        {
+            public string name;
+            public List<Vector3> vertices, normals;
+            public List<Vector2> uvs;
+            public List<int> triangles;
+            public bool missingNormals;
+        }
+
         // OBJ files are right-handed and Unity is left-handed, so every point is mirrored along Z (which also turns
         // the model around) and faces are wound the other way. `transform` is then applied to every point.
-        public static Mesh Load(string path, Matrix4x4 transform)
+        public static Data Read(string path, Matrix4x4 transform)
         {
             var positions = new List<Vector3>();
             var uvs = new List<Vector2>();
@@ -71,13 +81,26 @@ namespace SMTCustomerImprovements
                 }
             }
 
-            var mesh = new Mesh { name = Path.GetFileNameWithoutExtension(path) };
-            if (vertices.Count > 65535) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-            mesh.SetVertices(vertices);
-            mesh.SetUVs(0, meshUVs);
-            mesh.SetNormals(meshNormals);
-            mesh.SetTriangles(triangles, 0);
-            if (missingNormals) mesh.RecalculateNormals();
+            return new Data
+            {
+                name = Path.GetFileNameWithoutExtension(path),
+                vertices = vertices,
+                uvs = meshUVs,
+                normals = meshNormals,
+                triangles = triangles,
+                missingNormals = missingNormals,
+            };
+        }
+
+        public static Mesh Build(Data data)
+        {
+            var mesh = new Mesh { name = data.name };
+            if (data.vertices.Count > 65535) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            mesh.SetVertices(data.vertices);
+            mesh.SetUVs(0, data.uvs);
+            mesh.SetNormals(data.normals);
+            mesh.SetTriangles(data.triangles, 0);
+            if (data.missingNormals) mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
         }

@@ -171,7 +171,8 @@ its menu, where you choose between painting walls and hanging pictures.
 
 **Painting walls.** Pick any colour in the menu: red, green and blue sliders, a hex code, 20 ready-made colours and the
 colours you used lately. Aim at a wall and click to paint that panel; Shift+click paints every panel of the wall.
-Right-click a wall to pick up its colour. It tints the material the panel already has (pick a material with the game's own paint tablet), and
+Right-click a wall to pick up its colour. Walls you place yourself work too, each painted as one piece; one that's moved
+loses its Decorator colour. It tints the material the panel already has (pick a material with the game's own paint tablet), and
 painting the panel with the game's tablet again takes the Decorator's colour off. $2 per panel by default.
 
 **Pictures.** In the menu, *Import from PC...* opens Windows' Open dialog for a PNG or JPEG. Pictures can also be dropped into

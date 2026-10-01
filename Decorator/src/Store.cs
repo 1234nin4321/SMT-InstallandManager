@@ -151,6 +151,11 @@ namespace SMTDecorator
 
         public static bool ValidPanel(string key)
         {
+            if (key.StartsWith("d"))
+            {
+                var position = key.Substring(1).Split('_');
+                return position.Length == 3 && Array.TrueForAll(position, n => int.TryParse(n, NumberStyles.Integer, Inv, out _));
+            }
             var parts = key.Split('.');
             return parts.Length == 2 && int.TryParse(parts[0], out var a) && int.TryParse(parts[1], out var b) && a >= 0 && b >= 0;
         }

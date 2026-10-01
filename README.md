@@ -185,7 +185,7 @@ so every player with the mod sees the same walls and pictures, players who join 
 in pieces through the game's chat calls (in lines the game's chat never shows), and the host keeps it in
 `BepInEx/config/SMTDecorator/images/`. Other players get it from the host when they need it and keep a copy in the same folder.
 The host saves the paint and pictures with the store whenever the game saves, in a file next to the save
-(`<save>.decorator.txt` in the game's save folder).
+(`<save>.decorator.txt` in the game's save folder, or `Autosaves/Autosave001.es3.decorator.txt` for autosaves and Save and quit).
 Other players don't see you holding the tablet, since the game only shows its own items in players' hands. Players without the mod
 see the walls as the game's own paint left them and no pictures.
 Settings in F1: the two keys, the prices (host only), the largest picture size and how far you can reach.

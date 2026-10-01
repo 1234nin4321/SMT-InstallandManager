@@ -244,15 +244,21 @@ namespace SMTDecorator
         }
 
         // ---- The save file ----
+        //
+        // The game saves the store in two places: its save slot at the end of each day, and the one autosave file
+        // ("Autosaves/Autosave001.es3") during the day and on Save and quit, which Continue loads from. The decoration
+        // is kept next to whichever of the two the game writes, and read from the one it loads.
 
-        static string SaveFile()
+        const string Autosave = "Autosaves/Autosave001.es3";
+
+        // The day of the save being hosted, as the game hands it to the lobby; -1 when unknown
+        static int hostedDay = -1;
+
+        static string SaveFile(bool autosave)
         {
             try
             {
-                var type = AccessTools.TypeByName("HutongGames.PlayMaker.FsmVariables");
-                var globals = AccessTools.Property(type, "GlobalVariables").GetValue(null);
-                var fsmString = AccessTools.Method(type, "GetFsmString", new[] { typeof(string) }).Invoke(globals, new object[] { "CurrentFilename" });
-                var name = AccessTools.Property(fsmString.GetType(), "Value").GetValue(fsmString) as string;
+                string name = autosave ? Autosave : GlobalString("CurrentFilename");
                 if (string.IsNullOrEmpty(name)) return null;
                 return Path.Combine(Application.persistentDataPath, name + ".decorator.txt");
             }
@@ -263,28 +269,59 @@ namespace SMTDecorator
             }
         }
 
-        static void Save()
+        static object GlobalVariable(string getter, string name)
         {
-            var path = SaveFile();
+            var type = AccessTools.TypeByName("HutongGames.PlayMaker.FsmVariables");
+            var globals = AccessTools.Property(type, "GlobalVariables").GetValue(null);
+            var variable = AccessTools.Method(type, getter, new[] { typeof(string) }).Invoke(globals, new object[] { name });
+            return AccessTools.Property(variable.GetType(), "Value").GetValue(variable);
+        }
+
+        static string GlobalString(string name) => GlobalVariable("GetFsmString", name) as string;
+
+        static bool LoadingFromAutosave()
+        {
+            try
+            {
+                return GlobalVariable("GetFsmBool", "LoadingFromAutosave") is bool b && b;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        static void Save(bool autosave)
+        {
+            var path = SaveFile(autosave);
             if (path == null) return;
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
             var lines = new List<string> { "day " + GameData.Instance.gameDay.ToString(Inv) };
             foreach (var group in GroupPaint()) lines.Add("paint " + group);
             foreach (var picture in Pictures.Values) lines.Add("picture " + FormatPicture(picture));
             File.WriteAllLines(path, lines);
+            DecoratorPlugin.Log.LogInfo($"Saved {Paint.Count} painted wall panels and {Pictures.Count} pictures to {path}");
         }
 
         static void Load()
         {
             Clear();
-            var path = SaveFile();
-            if (path == null || !File.Exists(path)) return;
+            var path = SaveFile(LoadingFromAutosave());
+            // An autosave made before the Decorator kept one has no decoration of its own; the slot's is the next best
+            if (path != null && !File.Exists(path) && LoadingFromAutosave()) path = SaveFile(false);
+            if (path == null) return;
+            if (!File.Exists(path))
+            {
+                DecoratorPlugin.Log.LogInfo($"No decoration saved for this store ({path})");
+                return;
+            }
 
             var lines = File.ReadAllLines(path);
             // A new game started in a slot that was used before would otherwise get the old store's decoration
-            if (lines.Length > 0 && lines[0].StartsWith("day ") && int.TryParse(lines[0].Substring(4), out var day) &&
-                day > GameData.Instance.gameDay)
+            if (hostedDay >= 0 && lines.Length > 0 && lines[0].StartsWith("day ") &&
+                int.TryParse(lines[0].Substring(4), NumberStyles.Integer, Inv, out var day) && day > hostedDay)
             {
-                DecoratorPlugin.Log.LogInfo("The decoration file belongs to a later day than this save, so it's left out (new game?)");
+                DecoratorPlugin.Log.LogInfo($"The decoration file is from day {day}, later than this save's day {hostedDay}, so it's left out (new game?)");
                 return;
             }
             foreach (var line in lines)
@@ -294,7 +331,7 @@ namespace SMTDecorator
                 else if (line.StartsWith("picture ") && ParsePicture(line.Substring(8)) is Picture picture)
                     SetPicture(picture);
             }
-            DecoratorPlugin.Log.LogInfo($"Loaded {Paint.Count} painted wall panels and {Pictures.Count} pictures.");
+            DecoratorPlugin.Log.LogInfo($"Loaded {Paint.Count} painted wall panels and {Pictures.Count} pictures from {path}");
         }
 
         // The painted panels as "colour=panel,..." lines, one per colour, each short enough for one chat line
@@ -314,15 +351,16 @@ namespace SMTDecorator
             return lines;
         }
 
-        [HarmonyPatch(typeof(SaveBehaviour), nameof(SaveBehaviour.SavePersistentValues))]
+        // Every save goes through here: the end of the day (to the save slot) and autosaves, Save and quit included
+        [HarmonyPatch(typeof(NetworkSpawner), nameof(NetworkSpawner.SaveProps))]
         static class SavePatch
         {
-            static void Postfix()
+            static void Postfix(bool autosave)
             {
                 if (!NetworkServer.active) return;
                 try
                 {
-                    Save();
+                    Save(autosave);
                 }
                 catch (Exception e)
                 {
@@ -331,13 +369,22 @@ namespace SMTDecorator
             }
         }
 
-        [HarmonyPatch(typeof(SaveBehaviour), nameof(SaveBehaviour.LoadPersistentValues))]
+        // The game remembers which day it's hosting before it loads the store
+        [HarmonyPatch(typeof(SteamLobby), nameof(SteamLobby.HostLobby))]
+        static class HostPatch
+        {
+            static void Prefix(int day)
+            {
+                hostedDay = day;
+            }
+        }
+
+        // Runs on the host only, as the store starts, whether it comes from the save slot or the autosave
+        [HarmonyPatch(typeof(NetworkSpawner), nameof(NetworkSpawner.OnStartServer))]
         static class LoadPatch
         {
             static void Postfix()
             {
-                // Only the host loads a save; a player in someone else's store keeps what the host sent
-                if (NetworkClient.active && !NetworkServer.active) return;
                 try
                 {
                     Load();
@@ -347,6 +394,7 @@ namespace SMTDecorator
                 {
                     DecoratorPlugin.Log.LogError($"Could not load the decoration: {e}");
                 }
+                hostedDay = -1;
             }
         }
     }

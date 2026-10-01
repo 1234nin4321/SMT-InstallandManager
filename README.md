@@ -163,6 +163,32 @@ host or not. Turn it off in F1 (*Customer count* → *Show*).
 Everything is decided by the host; other players need the mod to check payments and see the hints, the summary line,
 the children's size, the party aura, the stink cloud and what customers say.
 
+## SMT Decorator (optional plugin)
+
+Adds the **Decorator**, a tablet for decorating the store. Press **F7** with empty hands to take it out, and again to put it away.
+It's the ordering tablet's model, held the same way, and its screen shows the colour or picture you've picked. Press **Tab** to open
+its menu, where you choose between painting walls and hanging pictures.
+
+**Painting walls.** Pick any colour in the menu: red, green and blue sliders, a hex code, 20 ready-made colours and the
+colours you used lately. Aim at a wall and click to paint that panel; Shift+click paints every panel of the wall.
+Right-click a wall to pick up its colour. It tints the material the panel already has (pick a material with the game's own paint tablet), and
+painting the panel with the game's tablet again takes the Decorator's colour off. $2 per panel by default.
+
+**Pictures.** In the menu, *Import from PC...* opens Windows' Open dialog for a PNG or JPEG. Pictures can also be dropped into
+`BepInEx/config/SMTDecorator/Import/` and imported from the list in the menu. Pictures bigger than 1024 pixels across are scaled down
+first. Pick one, aim at a wall and click to hang it; a preview shows where it will go, and scrolling (or the slider in the menu) sets its width.
+Right-click a picture to take it down. $10 per picture by default.
+
+Everything is done by the host: players send what they want to do to the host, which charges for it and passes it on to everyone,
+so every player with the mod sees the same walls and pictures, players who join later included. A picture a player imports is sent to the host
+in pieces through the game's chat calls (in lines the game's chat never shows), and the host keeps it in
+`BepInEx/config/SMTDecorator/images/`. Other players get it from the host when they need it and keep a copy in the same folder.
+The host saves the paint and pictures with the store whenever the game saves, in a file next to the save
+(`<save>.decorator.txt` in the game's save folder).
+Other players don't see you holding the tablet, since the game only shows its own items in players' hands. Players without the mod
+see the walls as the game's own paint left them and no pictures.
+Settings in F1: the two keys, the prices (host only), the largest picture size and how far you can reach.
+
 ## Layout
 
 | Folder         | What                                                        |
@@ -175,6 +201,7 @@ the children's size, the party aura, the stink cloud and what customers say.
 | `AutoManufacturing/` | SMTAutoManufacturing.dll (optional BepInEx plugin, manufacturing) |
 | `AnyoneContinues/` | SMTAnyoneContinues.dll (optional BepInEx plugin, end of day) |
 | `CustomerImprovements/` | SMTCustomerImprovements.dll (optional BepInEx plugin, customers) |
+| `Decorator/` | SMTDecorator.dll (optional BepInEx plugin, wall paint and pictures) |
 | `sources/`     | The game's `Assembly-CSharp.dll` and `Mirror.dll` (not committed) |
 | `Plugin.Tests/`| Tests for the plugin's install logic, run on plain .NET     |
 | `dist/`        | Prebuilt installer exe and the plugin release zip           |
@@ -191,7 +218,7 @@ dotnet run -c Release --project Plugin.Tests
 A Release build writes `dist/SMTInstaller_vX.Y.Z.exe` and `dist/SMTModBrowser_vX.Y.Z.zip`.
 Attach them to a GitHub release so the installer can find them (the repo must be public for that).
 
-UberEats, Random Announcements, Auto Manufacturing, Anyone Continues and Customer Improvements are built on their own because they need the game's assemblies. Copy `Assembly-CSharp.dll` and
+UberEats, Random Announcements, Auto Manufacturing, Anyone Continues, Customer Improvements and Decorator are built on their own because they need the game's assemblies. Copy `Assembly-CSharp.dll` and
 `Mirror.dll` from the game's `Supermarket Together_Data/Managed/` folder into `sources/` (git ignores them), then:
 
 ```
@@ -200,10 +227,11 @@ dotnet build -c Release RandomAnnouncements/SMTRandomAnnouncements.csproj
 dotnet build -c Release AutoManufacturing/SMTAutoManufacturing.csproj
 dotnet build -c Release AnyoneContinues/SMTAnyoneContinues.csproj
 dotnet build -c Release CustomerImprovements/SMTCustomerImprovements.csproj
+dotnet build -c Release Decorator/SMTDecorator.csproj
 ```
 
 That writes `dist/SMTUberEats_vX.Y.Z.zip`, `dist/SMTRandomAnnouncements_vX.Y.Z.zip`, `dist/SMTAutoManufacturing_vX.Y.Z.zip`
-`dist/SMTAnyoneContinues_vX.Y.Z.zip` and `dist/SMTCustomerImprovements_vX.Y.Z.zip`.
+`dist/SMTAnyoneContinues_vX.Y.Z.zip`, `dist/SMTCustomerImprovements_vX.Y.Z.zip` and `dist/SMTDecorator_vX.Y.Z.zip`.
 
 - The installer finds updates of itself by the version in the exe's file name, so keep the
   `SMTInstaller_vX.Y.Z.exe` name and bump `<Version>` in `Installer/SMTInstaller.csproj` to release one.

@@ -34,6 +34,13 @@
       "asset": "^SMTCustomerImprovements_v.*\\.zip$",
       "file": "BepInEx/plugins/SMTCustomerImprovements/SMTCustomerImprovements.dll",
       "selected": false
+    },
+    {
+      "name": "Decorator",
+      "description": "A tablet that paints walls any colour and hangs your own pictures, seen by every player and saved by the host",
+      "asset": "^SMTDecorator_v.*\\.zip$",
+      "file": "BepInEx/plugins/SMTDecorator/SMTDecorator.dll",
+      "selected": false
     }
   ]
 }

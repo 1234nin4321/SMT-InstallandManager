@@ -9,6 +9,8 @@ namespace SMTDecorator
     {
         // Pictures stand this far off the wall, so the wall doesn't show through
         public const float Offset = 0.006f;
+        // Floors are seen at a flat angle from further away, so pictures there lie a little higher
+        public const float FloorOffset = 0.012f;
 
         static readonly Dictionary<int, GameObject> shown = new Dictionary<int, GameObject>();
         static readonly Dictionary<int, string> shownTexture = new Dictionary<int, string>();
@@ -178,8 +180,9 @@ namespace SMTDecorator
             return best;
         }
 
-        // Where a picture goes on the wall the player is looking at, upright, facing out of the wall.
-        // Only fairly upright surfaces count as walls.
+        // Where a picture goes on the wall or floor the player is looking at, facing out of it. On a wall it hangs
+        // upright; on the floor it lies flat, its top pointing away from the player so it reads the right way up.
+        // Fairly upright surfaces count as walls and fairly flat ones facing up as floors; ceilings are left out.
         public static bool Spot(out Vector3 position, out Quaternion rotation)
         {
             position = default;
@@ -189,10 +192,19 @@ namespace SMTDecorator
             var mask = Physics.DefaultRaycastLayers & ~(1 << 2);
             if (!Physics.Raycast(camera.transform.position, camera.transform.forward, out var hit, DecoratorPlugin.Reach.Value, mask, QueryTriggerInteraction.Ignore))
                 return false;
-            if (Mathf.Abs(hit.normal.y) > 0.5f) return false;
+
+            // The quad shows its front to whoever looks along its forward, so forward points into the surface
+            if (hit.normal.y > 0.5f)
+            {
+                var away = Vector3.ProjectOnPlane(camera.transform.forward, hit.normal);
+                if (away.sqrMagnitude < 0.0001f) away = Vector3.ProjectOnPlane(camera.transform.up, hit.normal);
+                position = hit.point + hit.normal * FloorOffset;
+                rotation = Quaternion.LookRotation(-hit.normal, away.normalized);
+                return true;
+            }
+            if (hit.normal.y < -0.5f) return false;
             var normal = new Vector3(hit.normal.x, 0f, hit.normal.z).normalized;
             position = hit.point + normal * Offset;
-            // The quad shows its front to whoever looks along its forward, so forward points into the wall
             rotation = Quaternion.LookRotation(-normal, Vector3.up);
             return true;
         }

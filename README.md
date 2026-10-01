@@ -177,7 +177,7 @@ painting the panel with the game's tablet again takes the Decorator's colour off
 
 **Pictures.** In the menu, *Import from PC...* opens Windows' Open dialog for a PNG or JPEG. Pictures can also be dropped into
 `BepInEx/config/SMTDecorator/Import/` and imported from the list in the menu. Pictures bigger than 1024 pixels across are scaled down
-first. Pick one, aim at a wall and click to hang it; a preview shows where it will go, and scrolling (or the slider in the menu) sets its width.
+first. Pick one, aim at a wall and click to hang it, or at the floor to lay it flat there (its top points away from you); a preview shows where it will go, and scrolling (or the slider in the menu) sets its width.
 Right-click a picture to take it down. $10 per picture by default.
 
 Everything is done by the host: players send what they want to do to the host, which charges for it and passes it on to everyone,

@@ -385,7 +385,7 @@ namespace SMTDecorator
             else
             {
                 GUILayout.Label("Pictures   " + pictureWidth.ToString("0.00") + " m wide", Styles.Title);
-                GUILayout.Label("Click: hang the picture    Scroll: size", Styles.Small);
+                GUILayout.Label("Click: put it on a wall or the floor    Scroll: size", Styles.Small);
                 GUILayout.Label("Right-click a picture: take it down", Styles.Small);
             }
             GUILayout.Label(DecoratorPlugin.MenuKey.Value + ": menu    " + DecoratorPlugin.TabletKey.Value + ": put the tablet away", Styles.Small);

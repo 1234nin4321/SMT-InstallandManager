@@ -29,6 +29,7 @@ namespace SMTDecorator
         static GameObject model;
         static Material screen;
         static GameObject preview;
+        static Texture2D previewTexture;
         static readonly HashSet<string> uploaded = new HashSet<string>();
 
         static string note;
@@ -169,11 +170,8 @@ namespace SMTDecorator
                 Pictures.Show(screen, texture);
                 return;
             }
-            screen.mainTexture = null;
-            if (screen.HasProperty("_BaseMap")) screen.SetTexture("_BaseMap", null);
-            var shown = mode == Mode.Paint ? (Color)color : new Color(0.15f, 0.15f, 0.15f);
-            screen.color = shown;
-            if (screen.HasProperty("_BaseColor")) screen.SetColor("_BaseColor", shown);
+            Pictures.SetTexture(screen, Texture2D.whiteTexture);
+            Pictures.SetColor(screen, mode == Mode.Paint ? (Color)color : new Color(0.15f, 0.15f, 0.15f));
         }
 
         static void PutAway()
@@ -248,8 +246,11 @@ namespace SMTDecorator
             // Nudged a little further out than the real thing, so it shows in front of pictures already there
             ShowPreview(true);
             Pictures.Place(preview.transform, position + rotation * Vector3.back * Pictures.Offset, rotation, pictureWidth, height);
-            if (!(preview.GetComponent<MeshRenderer>().material.mainTexture == texture))
+            if (previewTexture != texture)
+            {
                 Pictures.Show(preview.GetComponent<MeshRenderer>().material, texture);
+                previewTexture = texture;
+            }
 
             if (!UnityInput.Current.GetMouseButtonDown(0) || !CanAct() || !Affordable(DecoratorPlugin.PicturePrice.Value)) return;
             if (!Net.IsHost && uploaded.Add(pictureHash)) Net.Upload(pictureHash);

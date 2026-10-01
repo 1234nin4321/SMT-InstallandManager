@@ -87,21 +87,32 @@ namespace SMTDecorator
             return go;
         }
 
-        // A copy of a wall's material, so pictures are lit like the walls, with its own textures taken off
+        // Unlit, so a picture shows its own colours whatever the light around it. (Lit by the store's light, pictures
+        // came out black: the walls' shader relies on lighting a picture added by a mod doesn't get.)
+        // The first shader the game has of these is used.
+        static readonly string[] Shaders = { "Universal Render Pipeline/Unlit", "Unlit/Texture", "Sprites/Default", "UI/Default" };
+
         public static Material NewMaterial()
         {
             if (baseMaterial == null)
             {
-                var wall = Walls.AnyWallMaterial();
-                var shader = wall != null ? wall.shader : Shader.Find("Universal Render Pipeline/Lit");
-                baseMaterial = shader != null ? new Material(shader) : new Material(Shader.Find("Standard"));
-                foreach (var keyword in new[] { "_NORMALMAP", "_METALLICSPECGLOSSMAP", "_EMISSION", "_OCCLUSIONMAP", "_PARALLAXMAP" })
-                    baseMaterial.DisableKeyword(keyword);
-                Set(baseMaterial, "_Smoothness", 0.15f);
-                Set(baseMaterial, "_Metallic", 0f);
+                foreach (var name in Shaders)
+                {
+                    var shader = Shader.Find(name);
+                    if (shader == null || !shader.isSupported) continue;
+                    baseMaterial = new Material(shader);
+                    break;
+                }
+                if (baseMaterial == null)
+                {
+                    // Last resort: the walls' own shader
+                    var wall = Walls.AnyWallMaterial();
+                    baseMaterial = new Material(wall != null ? wall.shader : Shader.Find("Standard"));
+                }
+                DecoratorPlugin.Log.LogInfo($"Pictures use the shader {baseMaterial.shader.name}");
             }
             var material = new Material(baseMaterial);
-            material.color = new Color(0.55f, 0.55f, 0.55f);
+            SetColor(material, new Color(0.55f, 0.55f, 0.55f));
             return material;
         }
 
@@ -110,23 +121,41 @@ namespace SMTDecorator
             if (material.HasProperty(property)) material.SetFloat(property, value);
         }
 
+        public static void SetColor(Material material, Color color)
+        {
+            foreach (var property in new[] { "_BaseColor", "_Color" })
+                if (material.HasProperty(property)) material.SetColor(property, color);
+        }
+
+        public static void SetTexture(Material material, Texture texture)
+        {
+            foreach (var property in new[] { "_BaseMap", "_MainTex" })
+            {
+                if (!material.HasProperty(property)) continue;
+                material.SetTexture(property, texture);
+                material.SetTextureScale(property, Vector2.one);
+                material.SetTextureOffset(property, Vector2.zero);
+            }
+        }
+
+        static bool logged;
+
         public static void Show(Material material, Texture2D texture)
         {
-            material.color = Color.white;
-            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
-            material.mainTexture = texture;
-            if (material.HasProperty("_BaseMap"))
-            {
-                material.SetTexture("_BaseMap", texture);
-                material.SetTextureScale("_BaseMap", Vector2.one);
-                material.SetTextureOffset("_BaseMap", Vector2.zero);
-            }
+            SetColor(material, Color.white);
+            SetTexture(material, texture);
             // Transparent parts of a PNG are left out
             bool alpha = ImageFiles.HasTransparency(texture);
             Set(material, "_AlphaClip", alpha ? 1f : 0f);
             Set(material, "_Cutoff", 0.5f);
             if (alpha) material.EnableKeyword("_ALPHATEST_ON");
             else material.DisableKeyword("_ALPHATEST_ON");
+            if (!logged)
+            {
+                logged = true;
+                var middle = texture.isReadable ? texture.GetPixelBilinear(0.5f, 0.5f) : Color.clear;
+                DecoratorPlugin.Log.LogInfo($"Showing a {texture.width}x{texture.height} {texture.format} picture with {material.shader.name}; its middle pixel is {middle}");
+            }
         }
 
         // The picture the ray hits first, if it's closer than the wall

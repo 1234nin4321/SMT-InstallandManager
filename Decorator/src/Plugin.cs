@@ -10,7 +10,7 @@ namespace SMTDecorator
     {
         public const string Guid = "smt.installandmanager.decorator";
         public const string Name = "SMT Decorator";
-        public const string Version = "0.1.0";
+        public const string Version = "0.1.1";
 
         internal static BepInEx.Logging.ManualLogSource Log;
         internal static ConfigEntry<KeyboardShortcut> TabletKey;

@@ -60,27 +60,35 @@ namespace SMTDecorator
             }
         }
 
+        // Scaled on the CPU, smoothing over the pixels each new pixel covers
         static Texture2D Scale(Texture2D source, int max)
         {
             float factor = (float)max / Mathf.Max(source.width, source.height);
             int width = Mathf.Max(1, Mathf.RoundToInt(source.width * factor));
             int height = Mathf.Max(1, Mathf.RoundToInt(source.height * factor));
-            var target = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
-            var previous = RenderTexture.active;
-            try
+            var pixels = source.GetPixels32();
+            var scaled = new Color32[width * height];
+            int sw = source.width, sh = source.height;
+            for (int y = 0; y < height; y++)
             {
-                Graphics.Blit(source, target);
-                RenderTexture.active = target;
-                var scaled = new Texture2D(width, height, TextureFormat.RGBA32, false);
-                scaled.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                scaled.Apply();
-                return scaled;
+                int y0 = y * sh / height, y1 = Math.Max(y0 + 1, (y + 1) * sh / height);
+                for (int x = 0; x < width; x++)
+                {
+                    int x0 = x * sw / width, x1 = Math.Max(x0 + 1, (x + 1) * sw / width);
+                    int r = 0, g = 0, b = 0, a = 0, n = 0;
+                    for (int sy = y0; sy < y1; sy++)
+                        for (int sx = x0; sx < x1; sx++)
+                        {
+                            var p = pixels[sy * sw + sx];
+                            r += p.r; g += p.g; b += p.b; a += p.a; n++;
+                        }
+                    scaled[y * width + x] = new Color32((byte)(r / n), (byte)(g / n), (byte)(b / n), (byte)(a / n));
+                }
             }
-            finally
-            {
-                RenderTexture.active = previous;
-                RenderTexture.ReleaseTemporary(target);
-            }
+            var result = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            result.SetPixels32(scaled);
+            result.Apply();
+            return result;
         }
 
         static readonly Dictionary<int, bool> transparency = new Dictionary<int, bool>();
